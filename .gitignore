@@ -12,6 +12,8 @@ Makefile*
 *.user*
 *.autosave
 *.exe
+*.dll
+*.lib
 *.Release
 *.Debug
 *.rc

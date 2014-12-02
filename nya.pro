@@ -2,7 +2,7 @@ QT = core
 TEMPLATE = lib
 
 include(pri/vars.pri)
-libPath = $${pRoot}/qxtcore
+libPath = $${d_root}/qxtcore
 include($$includePri)
 
 
@@ -12,7 +12,8 @@ HEADERS += \
     src/DirNya.hpp \
     src/Nya.hpp \
     src/SingletonNya.hpp \
-    src/TimeNya.hpp
+    src/TimeNya.hpp \
+    src/EnumNya.hpp
 
 SOURCES += \
     src/ApplicationNya.cpp \

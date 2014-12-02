@@ -153,6 +153,13 @@ ApplicationBase::ApplicationBase()
 	// Выставлять текущую директорию там, где бинарник.
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
 
+	// Задать главную папку с системными конфигами всех программ.
+#ifdef Q_OS_WIN
+	rootConfigDir = MakeDirPath(QDir::fromNativeSeparators(qgetenv("APPDATA")));
+#else
+	rootConfigDir = QDir::homePath() + "/.config/";
+#endif
+
 	// Глобальная переменная на случай сбоя.
 	pApp = this;
 
@@ -181,13 +188,6 @@ bool ApplicationBase::LoadConfig(QString configDir_, QString configFileName)
 	// Задать имя конфига.
 	if( !configFileName.size() ) configFileName = appName + ".cfg";
 
-	// Задать главную папку с системными конфигами всех программ.
-#ifdef Q_OS_WIN
-	QString mainConfigDir = MakeDirPath(QDir::fromNativeSeparators(qgetenv("APPDATA")));
-#else
-	QString mainConfigDir = QDir::homePath() + "/.config/";
-#endif
-
 	// Если папка явно указана, тогда выбирать её.
 	if( configDir_.size() )
 	{
@@ -201,7 +201,7 @@ bool ApplicationBase::LoadConfig(QString configDir_, QString configFileName)
 	if( !configDir.size() )
 	{
 		// Создать директорию с конфигами.
-		configDir = mainConfigDir + appName + "/";
+		configDir = rootConfigDir + appName + "/";
 		if( !MakeDirIfNone(configDir) )
 		{
 			configDir = QDir::currentPath() + "/.config/";
