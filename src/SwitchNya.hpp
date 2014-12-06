@@ -34,11 +34,10 @@ case_( "three" )
 {
 	std::cout << "!!!\n";
 }
-switchDef( s )
+switchD( s )
 {
 	std::cout << "Non-non\n";
 }
-switchEnd
 
 // or
 ...
