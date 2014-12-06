@@ -1,3 +1,9 @@
+/****************************************************
+ *
+ * Author: Akela1101 <akela1101@gmail.com>
+ *
+ ****************************************************/
+
 #ifndef ApplicationNya_H
 #define ApplicationNya_H
 

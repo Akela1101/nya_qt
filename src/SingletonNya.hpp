@@ -1,8 +1,8 @@
-/*
- * File:   SingletonNya.hpp
- * Author: Akela1101
+/****************************************************
  *
- */
+ * Author: Akela1101 <akela1101@gmail.com>
+ *
+ ****************************************************/
 
 #ifndef SINGLETONNYA_HPP
 #define SINGLETONNYA_HPP

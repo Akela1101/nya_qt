@@ -1,14 +1,13 @@
-/*
- * File:   Nya.hpp
- * Author: Akela1101
+/****************************************************
  *
- */
+ * Author: Akela1101 <akela1101@gmail.com>
+ *
+ ****************************************************/
 
 #ifndef _NYA_HPP
 #define	_NYA_HPP
 
-#include "qxtlogger.h"
-
+// STD
 #define std_hash std::unordered_map
 
 #include <memory>
@@ -28,6 +27,12 @@ typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef long long dint;
 typedef unsigned long long udint;
+
+// QT
+#include "qxtlogger.h"
+
+#define Invoke QMetaObject::invokeMethod
+
 
 #endif	/* _NYA_HPP */
 

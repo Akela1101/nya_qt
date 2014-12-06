@@ -1,3 +1,9 @@
+/****************************************************
+ *
+ * Author: Akela1101 <akela1101@gmail.com>
+ *
+ ****************************************************/
+
 #ifndef ENUMNYA_HPP
 #define ENUMNYA_HPP
 
@@ -11,7 +17,7 @@ enum MyEnum
 	Four = 40, // It's the fourth one
 	Five,
 	Six
-}
+};
 
 // Write something like this:
 #define MyEnumDef(K, L, M, N) \
@@ -47,14 +53,15 @@ MyEnum e = stoe("One");
 #define MAP_KVC(KEY, VALUE, COMMENT) MAP_K(KEY)
 
 #if __cplusplus >= 201103L
-#include "unordered_map"
+#include <unordered_map>
+#include <string>
 #define _prefix_nya template<typename ...>
 #define NYA_ENUM(ENUM_NAME, ENUM_DEF) \
 	enum ENUM_NAME { ENUM_DEF(ENUM_K, ENUM_KV, ENUM_KC, ENUM_KVC) }; \
 	_prefix_nya const char* etos(ENUM_NAME e) \
 	{ switch( e ) { ENUM_DEF(CASE_K, CASE_KV, CASE_KC, CASE_KVC) default: return "!~" #ENUM_NAME "~"; } } \
 	_prefix_nya ENUM_NAME stoe(const char* s) \
-	{ static std::unordered_map<const char*, ENUM_NAME> m = { ENUM_DEF(MAP_K, MAP_KV, MAP_KC, MAP_KVC) }; \
+	{ static std::unordered_map<std::string, ENUM_NAME> m = { ENUM_DEF(MAP_K, MAP_KV, MAP_KC, MAP_KVC) }; \
 	  auto it = m.find(s); if( it != m.end() ) return it->second; return (ENUM_NAME)-1; }
 #else
 // C or C++03

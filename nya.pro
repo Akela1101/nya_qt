@@ -13,10 +13,13 @@ HEADERS += \
     src/Nya.hpp \
     src/SingletonNya.hpp \
     src/TimeNya.hpp \
-    src/EnumNya.hpp
+    src/EnumNya.hpp \
+    src/SwitchNya.hpp \
+    src/XmlNya.hpp
 
 SOURCES += \
     src/ApplicationNya.cpp \
     src/ConfigNya.cpp \
     src/DirNya.cpp \
-    src/TimeNya.cpp
+    src/TimeNya.cpp \
+    src/XmlNya.cpp
