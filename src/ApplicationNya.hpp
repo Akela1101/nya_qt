@@ -15,7 +15,7 @@
 
 namespace Nya
 {
-	class ApplicationBase : public QObject
+	class Application : public QObject
 	{
 		Q_OBJECT
 
@@ -35,13 +35,14 @@ namespace Nya
 		bool isRestartOnCrash;        /// перезапускаться ли при падании
 
 	public:
+		Application() : isDaemon(false), isRestartOnCrash(false) {}
+		virtual ~Application() = 0;
+
 		QString GetConfigDir() const { return configDir; }
 
-		virtual void Quit();
-
 	protected:
-		ApplicationBase();
-		virtual ~ApplicationBase() = 0;
+		virtual void Quit();
+		virtual bool Init(); /// обязательно вызывать после конструктора
 
 		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
 		bool SaveConfig();

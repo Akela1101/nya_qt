@@ -9,6 +9,7 @@
 
 namespace Nya
 {
+	// Simple singleton.
 	template<typename T>
 	class Singleton
 	{
@@ -20,12 +21,12 @@ namespace Nya
 		Singleton() {}
 
 	private:
-		Singleton(const Singleton<T> &);
-		Singleton &operator=(const Singleton<T> &);
+		Singleton(const Singleton<T>&);
+		Singleton& operator=(const Singleton<T>&);
 
 	public:
-		// Get singleton
-		static T &GS()
+		// get singleton and create if need
+		static T& GS()
 		{
 			if( !instance )
 			{
@@ -38,16 +39,44 @@ namespace Nya
 			}
 			return *instance;
 		}
-
-		// Delete (in case it must be deleted before exit).
-		static void Delete()
-		{
-			delete instance;
-		}
-	};
-
+		// delete (in case it must be deleted before exit)
+		static void Delete() { delete instance; }
+	};	
 	template<typename T> T* Singleton<T>::instance = 0;
 	template<typename T> bool Singleton<T>::isAllocated = false;
+
+
+	// Base class for derived singleton.
+	template<typename T>
+	class SingletonBase
+	{
+	protected:
+		static T *instance;
+		static bool isAllocated;
+
+	public:
+		// get singleton
+		static T& GS() { return *instance; }
+		// create in derived class
+		template<typename S>
+		static S& GS()
+		{
+			if( !instance )
+			{
+				instance = (S*)::operator new(sizeof(S)); // allocate
+				if( !isAllocated )
+				{
+					isAllocated = true;
+					new(instance) S; // construct
+				}
+			}
+			return *(S*)instance;
+		}
+		// delete (in case it must be deleted before exit)
+		static void Delete() { delete instance; }
+	};
+	template<typename T> T* SingletonBase<T>::instance = 0;
+	template<typename T> bool SingletonBase<T>::isAllocated = false;
 }
 
 #endif // SINGLETONNYA_HPP

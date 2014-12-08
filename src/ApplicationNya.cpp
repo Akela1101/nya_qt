@@ -93,7 +93,7 @@ static char** backtrace_symbols(void *stack[], size_t size)
 /**
  * Function for catching system signals like SIGSEGV.
  */
-static ApplicationBase* pApp;
+static Application* pApp;
 void SystemSignalHandler(int iSignal)
 {
 	if( iSignal == SIGTERM )
@@ -132,11 +132,24 @@ void SystemSignalHandler(int iSignal)
 }
 
 //=============================================================
-ApplicationBase::ApplicationBase()
-	: appName(QFileInfo(QCoreApplication::applicationFilePath()).baseName())
-	, isDaemon(false)
-	, isRestartOnCrash(false)
+Application::~Application()
+{}
+
+/**
+ * Корректный выход.
+ */
+void Application::Quit()
 {
+	l_log << "Quit application called!";
+	QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+}
+
+/**
+ * Инициализация.
+ */
+bool Application::Init()
+{
+	appName = QFileInfo(QCoreApplication::applicationFilePath()).baseName();
 	if( !appName.size() ) appName = "_unknown_application_name_";
 
 	// Сделать мьютекс, чтобы в inno setup выключать.
@@ -172,24 +185,13 @@ ApplicationBase::ApplicationBase()
 	// Задать обработчик системных прерываний.
 	signal(SIGSEGV, SystemSignalHandler);
 	signal(SIGTERM, SystemSignalHandler);
-}
-
-ApplicationBase::~ApplicationBase()
-{}
-
-/**
- * Корректный выход.
- */
-void ApplicationBase::Quit()
-{
-	l_log << "Quit application called!";
-	QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+	return true;
 }
 
 /**
  * Загрузить настройки.
  */
-bool ApplicationBase::LoadConfig(QString configDir_, QString configFileName)
+bool Application::LoadConfig(QString configDir_, QString configFileName)
 {
 	// Задать имя конфига.
 	if( !configFileName.size() ) configFileName = appName + ".cfg";
@@ -257,7 +259,7 @@ bool ApplicationBase::LoadConfig(QString configDir_, QString configFileName)
 /**
  * Сохранить настройки.
  */
-bool ApplicationBase::SaveConfig()
+bool Application::SaveConfig()
 {
 	// Сохранить обновлённый конфиг.
 	QFile configFile(configFileFullName);
@@ -279,7 +281,7 @@ bool ApplicationBase::SaveConfig()
  *
  * true, если лог сбоя есть и начат давно → отослать его админу.
  */
-bool ApplicationBase::InitLogs()
+bool Application::InitLogs()
 {
 	traceLogPath = logDir + "trace.log";
 
