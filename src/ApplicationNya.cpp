@@ -136,15 +136,6 @@ Application::~Application()
 {}
 
 /**
- * Корректный выход.
- */
-void Application::Quit()
-{
-	l_log << "Quit application called!";
-	QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-}
-
-/**
  * Инициализация.
  */
 bool Application::Init()
@@ -186,6 +177,15 @@ bool Application::Init()
 	signal(SIGSEGV, SystemSignalHandler);
 	signal(SIGTERM, SystemSignalHandler);
 	return true;
+}
+
+/**
+ * Корректный выход.
+ */
+void Application::Quit()
+{
+	l_log << "Quit application called!";
+	Invoke(qApp, "quit", Qt::QueuedConnection);
 }
 
 /**

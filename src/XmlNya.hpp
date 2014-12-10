@@ -12,7 +12,7 @@
 
 
 typedef QXmlStreamReader::TokenType XmlType;
-typedef QHash<QString, QStringRef> AttrsType;
+typedef QHash<QString, QString> AttrsType;
 
 namespace Nya
 {
@@ -21,7 +21,12 @@ class XmlReader : public QXmlStreamReader
 public:
 	XmlReader(const char* data) : QXmlStreamReader(data) {}
 
-	inline bool ReadNextChild() { return readNext() == TokenType::StartElement; }
+	bool ReadNextChild()
+	{
+		auto tt = readNext();
+		if( tt == TokenType::Characters ) tt = readNext(); // skip '\n' and other trash
+		return tt == TokenType::StartElement;
+	}
 	inline QString ReadElement() { return readElementText(QXmlStreamReader::IncludeChildElements); }
 	inline void SkipElement() { readElementText(QXmlStreamReader::IncludeChildElements); }
 

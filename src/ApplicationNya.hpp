@@ -40,9 +40,10 @@ namespace Nya
 
 		QString GetConfigDir() const { return configDir; }
 
-	protected:
-		virtual void Quit();
 		virtual bool Init(); /// обязательно вызывать после конструктора
+
+	protected:
+		virtual void Quit();		
 
 		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
 		bool SaveConfig();

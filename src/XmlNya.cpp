@@ -13,6 +13,6 @@ AttrsType XmlReader::GetAttributes()
 {
 	AttrsType attrs;
 	QXmlStreamAttributes as = attributes();
-	for( auto& a : as ) attrs.insert(a.name().toString(), a.value());
+	for( auto& a : as ) attrs.insert(a.name().toString(), a.value().toString());
 	return attrs;
 }
