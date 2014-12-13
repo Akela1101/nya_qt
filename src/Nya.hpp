@@ -31,7 +31,7 @@ typedef unsigned long long udint;
 // QT
 #include "qxtlogger.h"
 
-#define Invoke QMetaObject::invokeMethod
+#define InvMet QMetaObject::invokeMethod
 
 
 #endif	/* _NYA_HPP */

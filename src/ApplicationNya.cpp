@@ -185,7 +185,7 @@ bool Application::Init()
 void Application::Quit()
 {
 	l_log << "Quit application called!";
-	Invoke(qApp, "quit", Qt::QueuedConnection);
+	InvMet(qApp, "quit", Qt::QueuedConnection);
 }
 
 /**
