@@ -36,11 +36,13 @@ RCC_DIR = build/$${build_mode}/rcc
 # GCC
 QMAKE_CXXFLAGS *= \
 	-std=c++0x \ # Собирать новым сиплюсплюсом ввиду его особой няшности.
+	-fopenmp \ # Open MP
 	-U__STRICT_ANSI__ \ # На всякий случай включить макрос для ansi.
 	-MMD \ # Добавить несистемные хедеры в зависимости.
 	-Wno-unused-local-typedefs # отрубление ворнинга.
 
-LIBS += -static-libgcc -static
+QMAKE_LFLAGS *= -fopenmp
+LIBS *= -static-libgcc -static
 
 DEFINES += QXT_STATIC
 

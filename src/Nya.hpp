@@ -29,10 +29,11 @@ typedef long long dint;
 typedef unsigned long long udint;
 
 // QT
+#ifdef QXT_STATIC
 #include "qxtlogger.h"
+#endif
 
 #define InvMet QMetaObject::invokeMethod
-
 
 #endif	/* _NYA_HPP */
 
