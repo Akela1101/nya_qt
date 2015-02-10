@@ -39,13 +39,14 @@ namespace Nya
 		virtual ~Application() = 0;
 
 		QString GetConfigDir() const { return configDir; }
+		const Config& GetConfig() const { return config; }
 
 		virtual bool Init(); /// обязательно вызывать после конструктора
 
 	protected:
-		virtual void Quit();		
+		virtual void Quit();
 
-		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
+		void LoadConfig(QString configDir_ = "", QString configFileName = "");
 		bool SaveConfig();
 		bool InitLogs();
 

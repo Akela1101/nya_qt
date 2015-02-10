@@ -11,22 +11,17 @@
 
 namespace Nya
 {
+QString timeFormat = "yyyy-MM-dd hh:mm:ss";
+
 /**
  * Упрощённая строка длительности.
  */
 QString GetDurationString(int d)
 {
-	if( d < 60 )
-		return QString::number(d) + " с.";
-	else if( d < 3600 )
-		return QString::number(d / 60) + " м. "
-				+ (d % 60 ? QString::number(d % 60) + " с." : "");
-	else if( d < 86400 )
-		return QString::number(d / 3600) + " ч. "
-				+ (d % 3600 / 60 ? QString::number(d % 3600 / 60) + " м. " : "");
-	else
-		return QString::number(d / 86400) + " д. "
-				+ (d % 86400 / 3600 ? QString::number(d % 86400 / 3600) + " ч. " : "");
+	int day = d / 86400; d -= day * 86400;
+	int hour = d / 3600; d -= hour * 3600;
+	int min = d / 60;
+	return QString("%1 %2:%3").arg(day, 2).arg(hour, 2, 10, QChar('0')).arg(min, 2, 10, QChar('0'));
 }
 
 /**
@@ -34,7 +29,7 @@ QString GetDurationString(int d)
  */
 QString GetTimeString(time_t time)
 {
-	return QDateTime::fromTime_t(time).toString("yyyy-MM-dd hh:mm:ss");
+	return QDateTime::fromTime_t(time).toString(timeFormat);
 }
 
 /**

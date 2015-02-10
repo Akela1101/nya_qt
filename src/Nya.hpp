@@ -7,10 +7,14 @@
 #ifndef _NYA_HPP
 #define	_NYA_HPP
 
-// STD
-#define std_hash std::unordered_map
-
+#include <limits>
 #include <memory>
+
+#define std_hash std::unordered_map
+#define loca thread_local
+#define q_nan std::numeric_limits<double>::quiet_NaN()
+#define infin std::numeric_limits<double>::infinity()
+
 #define u_p std::unique_ptr
 #define s_p std::shared_ptr
 #define w_p std::weak_ptr

@@ -19,7 +19,9 @@ namespace Nya
 class XmlReader : public QXmlStreamReader
 {
 public:
-	XmlReader(const char* data) : QXmlStreamReader(data) {}
+	static void PrintHumanReadableXml(QIODevice* deviceOut, char* data);
+
+	using QXmlStreamReader::QXmlStreamReader;
 
 	bool ReadNextChild()
 	{

@@ -13,6 +13,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QTextCodec>
+#include <QTranslator>
 #include "QxtBasicFileLoggerEngine"
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -191,7 +192,7 @@ void Application::Quit()
 /**
  * Загрузить настройки.
  */
-bool Application::LoadConfig(QString configDir_, QString configFileName)
+void Application::LoadConfig(QString configDir_, QString configFileName)
 {
 	// Задать имя конфига.
 	if( !configFileName.size() ) configFileName = appName + ".cfg";
@@ -253,7 +254,14 @@ bool Application::LoadConfig(QString configDir_, QString configFileName)
 
 	// Сохранить обновлённый конфиг.
 	SaveConfig();
-	return true;
+
+	// Переводы.
+	QTranslator* translator = new QTranslator(qApp);
+	QString lang = config["LANG"];
+	if( lang.size() && translator->load(lang + ".qm", ":/tr") )
+	{
+		qApp->installTranslator(translator);
+	}
 }
 
 /**
