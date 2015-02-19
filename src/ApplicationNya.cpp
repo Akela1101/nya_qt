@@ -146,7 +146,6 @@ bool Application::Init()
 
 	// Сделать мьютекс, чтобы в inno setup выключать.
 #ifdef Q_OS_WIN
-	l_log << "Application name: " << appName;
 	CreateMutexA(0, 0, appName.toUtf8()); /*
 	if( ERROR_ALREADY_EXISTS == GetLastError() )
 	{
@@ -220,8 +219,6 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 			}
 		}
 	}
-	l_log << "Config directory in [" << configDir << "]";
-
 	configFileFullName = configDir + configFileName;
 
 	// Загрузить конфиг по умолчанию.
@@ -262,6 +259,10 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 	{
 		qApp->installTranslator(translator);
 	}
+
+	// Инициализировать логи.
+	InitLogs();
+	l_log << "Config directory in [" << configDir << "]";
 }
 
 /**
@@ -289,21 +290,20 @@ bool Application::SaveConfig()
  *
  * true, если лог сбоя есть и начат давно → отослать его админу.
  */
-bool Application::InitLogs()
+void Application::InitLogs()
 {
+	logDir = Nya::MakeDirPath(config["LOG_DIR"]);
 	traceLogPath = logDir + "trace.log";
 
 	Nya::MakeDirIfNone(logDir);
 	QFile::remove(traceLogPath);
 
-#if !defined Q_OS_WIN || !defined _DEBUG
 	QxtBasicFileLoggerEngine *traceLogFile  = new QxtBasicFileLoggerEngine(traceLogPath);
 	qxtLog->addLoggerEngine("trace", traceLogFile);
 	qxtLog->setMinimumLevel("trace", QxtLogger::TraceLevel);
 	QxtBasicFileLoggerEngine *mainLogFile  = new QxtBasicFileLoggerEngine(logDir + "main.log");
 	qxtLog->addLoggerEngine("main", mainLogFile);
 	qxtLog->setMinimumLevel("main", QxtLogger::InfoLevel);
-#endif
 
 	crashLogPath = logDir + "crash.log";
 	QFileInfo crashLogInfo(crashLogPath);
@@ -328,9 +328,8 @@ bool Application::InitLogs()
 			isRestartOnCrash = true;
 
 			QFile::rename(crashLogPath, logDir + "crashToSend.log");
-			return true;
+			//todo: virtual function for network send mail.
 		}
 	}
-	return false;
 }
 }

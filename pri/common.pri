@@ -7,7 +7,7 @@ else {
 }
 
 # Библиотека.
-contains(TEMPLATE, lib) {	
+contains(TEMPLATE, lib) {
 	!CONFIG(dll) : CONFIG += static
 
 	# Добавить _d к имени отладочной библиотеки.
@@ -39,7 +39,8 @@ QMAKE_CXXFLAGS *= \
 	-fopenmp \ # Open MP
 	-U__STRICT_ANSI__ \ # На всякий случай включить макрос для ansi.
 	-MMD \ # Добавить несистемные хедеры в зависимости.
-	-Wno-unused-local-typedefs # отрубление ворнинга.
+	-Wno-unused-local-typedefs \ # отрубление ворнинга.
+	-Wno-sign-compare # сравнение знаковых и беззнаковых чисел.
 
 QMAKE_LFLAGS *= -fopenmp
 LIBS *= -static-libgcc -static

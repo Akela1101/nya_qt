@@ -48,7 +48,7 @@ namespace Nya
 
 		void LoadConfig(QString configDir_ = "", QString configFileName = "");
 		bool SaveConfig();
-		bool InitLogs();
+		void InitLogs();
 
 	private slots:
 		void OnQuit() { Quit(); }
