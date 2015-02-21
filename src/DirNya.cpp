@@ -20,7 +20,7 @@ QString MakeDirPath(const QString& dir)
 bool MakeDirIfNone(const QString& dir)
 {
 	bool ret = QDir(dir).exists() || QDir().mkpath(dir);
-	if( !ret ) l_warning << "Unable to create directory in " << dir;
+	if( !ret ) l_info << "Unable to create directory in " << dir;
 	return ret;
 }
 }

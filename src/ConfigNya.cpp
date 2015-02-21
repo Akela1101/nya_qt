@@ -59,7 +59,7 @@ void Config::Load(QTextStream& its, bool isMainConfig)
 			}
 			if( !isValid )
 			{
-				l_warning << "Wrong string in config on line " << count << ": " << s;
+				l_info << "Wrong string in config on line " << count << ": " << s;
 			}
 		}
 		if( isMainConfig )

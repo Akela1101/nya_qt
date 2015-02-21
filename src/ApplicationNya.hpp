@@ -46,8 +46,8 @@ namespace Nya
 	protected:
 		virtual void Quit();
 
-		void LoadConfig(QString configDir_ = "", QString configFileName = "");
 		bool SaveConfig();
+		void LoadConfig(QString configDir_ = "", QString configFileName = "");
 		void InitLogs();
 
 	private slots:

@@ -99,20 +99,20 @@ void SystemSignalHandler(int iSignal)
 {
 	if( iSignal == SIGTERM )
 	{
-		l_log << "User requested termination.";
+		l_info << "User requested termination.";
 		pApp->Quit();
 		return;
 	}
 
 	// Add crash log to log.
-	l_fatal << "Catched segfault!";
+	l_critical << "Catched segfault!";
 	void *stack[512];
 	size_t size = backtrace(stack, 512);
 
 	char** s = backtrace_symbols(stack, size);
 	for( uint i = 2; i < size; ++i )
 	{
-		l_fatal << Demangle(s[i]);
+		l_critical << Demangle(s[i]);
 	}
 
 	// Move log → log_crash
@@ -122,11 +122,11 @@ void SystemSignalHandler(int iSignal)
 	{
 		QStringList args;
 		if( !pApp->isDaemon ) args << "-n";
-		l_fatal << "Restart app: "<< QProcess::startDetached(QCoreApplication::applicationFilePath(),
+		l_critical << "Restart app: "<< QProcess::startDetached(QCoreApplication::applicationFilePath(),
 														   args, QCoreApplication::applicationDirPath());
 	}
 	signal(iSignal, SIG_DFL);
-	l_fatal << "Quick exit from crashed app.";
+	l_critical << "Quick exit from crashed app.";
 #ifndef Q_OS_WIN
 	quick_exit(3);
 #endif
@@ -149,7 +149,7 @@ bool Application::Init()
 	CreateMutexA(0, 0, appName.toUtf8()); /*
 	if( ERROR_ALREADY_EXISTS == GetLastError() )
 	{
-		l_log << "Cannot start. Application already running.";
+		l_info << "Cannot start. Application already running.";
 		exit(2);
 	}*/
 #endif
@@ -184,8 +184,27 @@ bool Application::Init()
  */
 void Application::Quit()
 {
-	l_log << "Quit application called!";
+	l_info << "Quit application called!";
 	InvMet(qApp, "quit", Qt::QueuedConnection);
+}
+
+/**
+ * Сохранить настройки.
+ */
+bool Application::SaveConfig()
+{
+	// Сохранить обновлённый конфиг.
+	QFile configFile(configFileFullName);
+	if( !configFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text) )
+	{
+		l_error << "Can't write: " << configFileFullName;
+		return false;
+	}
+	QTextStream ots(&configFile);
+	config.Save(ots);
+	configFile.close();
+	configFile.setPermissions((QFile::Permissions)0x664);
+	return true;
 }
 
 /**
@@ -262,26 +281,8 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 
 	// Инициализировать логи.
 	InitLogs();
-	l_log << "Config directory in [" << configDir << "]";
-}
-
-/**
- * Сохранить настройки.
- */
-bool Application::SaveConfig()
-{
-	// Сохранить обновлённый конфиг.
-	QFile configFile(configFileFullName);
-	if( configFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text) )
-	{
-		QTextStream ots(&configFile);
-		config.Save(ots);
-		configFile.close();
-		configFile.setPermissions((QFile::Permissions)0x664);
-		return true;
-	}
-	l_warning << "Can't write: " << configFileFullName;
-	return false;
+	l_info << "Config in [" << configDir << "]";
+	l_trace << "Logs (LOG_DIR) in [" << logDir << "]";
 }
 
 /**
@@ -292,8 +293,13 @@ bool Application::SaveConfig()
  */
 void Application::InitLogs()
 {
-	logDir = Nya::MakeDirPath(config["LOG_DIR"]);
+	// Если папка для логов не указана, назначить для этого папку с конфигами.
+	logDir = config["LOG_DIR"];
+	logDir = logDir.size() ? Nya::MakeDirPath(logDir) : configDir;
+
+	QString mainLogPath = logDir + "main.log";
 	traceLogPath = logDir + "trace.log";
+	crashLogPath = logDir + "crash.log";
 
 	Nya::MakeDirIfNone(logDir);
 	QFile::remove(traceLogPath);
@@ -301,11 +307,10 @@ void Application::InitLogs()
 	QxtBasicFileLoggerEngine *traceLogFile  = new QxtBasicFileLoggerEngine(traceLogPath);
 	qxtLog->addLoggerEngine("trace", traceLogFile);
 	qxtLog->setMinimumLevel("trace", QxtLogger::TraceLevel);
-	QxtBasicFileLoggerEngine *mainLogFile  = new QxtBasicFileLoggerEngine(logDir + "main.log");
+	QxtBasicFileLoggerEngine *mainLogFile  = new QxtBasicFileLoggerEngine(mainLogPath);
 	qxtLog->addLoggerEngine("main", mainLogFile);
 	qxtLog->setMinimumLevel("main", QxtLogger::InfoLevel);
 
-	crashLogPath = logDir + "crash.log";
 	QFileInfo crashLogInfo(crashLogPath);
 	// Если предыдущего лога нет, или есть, но начат давно, разрешить перезапуск в-случае-чего.
 	if( !crashLogInfo.exists() )
@@ -324,7 +329,7 @@ void Application::InitLogs()
 		int delta = timeUTC() - crashLogInfoCreatedTime.toTime_t();
 		if( delta > 300 ) // 5 min.
 		{
-			l_log << "Crash delta = " << delta << " time = " << QDateTime::fromTime_t(timeUTC());
+			l_info << "Crash delta = " << delta << " time = " << QDateTime::fromTime_t(timeUTC());
 			isRestartOnCrash = true;
 
 			QFile::rename(crashLogPath, logDir + "crashToSend.log");
