@@ -10,9 +10,9 @@ else {
 contains(TEMPLATE, lib) {
 	!CONFIG(dll) : CONFIG += static
 
-	# Добавить _d к имени отладочной библиотеки.
+	# Добавить d к имени отладочной библиотеки.
 	CONFIG(debug, debug|release) {
-		TARGET = $${TARGET}_d
+		TARGET = $${TARGET}d
 	}
 }
 
@@ -76,7 +76,7 @@ defineReplace(_l_d) {
 	path =
 	for(arg, ARGS) {
 		CONFIG(debug, debug|release) {
-			path = -l$${arg}_d $$path
+			path = -l$${arg}d $$path
 		}
 		else {
 			path = -l$${arg} $$path

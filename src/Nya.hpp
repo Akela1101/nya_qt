@@ -7,6 +7,9 @@
 #ifndef _NYA_HPP
 #define	_NYA_HPP
 
+// Try to include this file to the last of all includes,
+// because of some necessary #defines.
+
 #include <limits>
 #include <memory>
 
@@ -32,12 +35,11 @@ typedef unsigned int uint;
 typedef long long dint;
 typedef unsigned long long udint;
 
-// QT
-#ifdef QXT_STATIC
-#include "qxtlogger.h"
-#endif
 
 #define InvMet QMetaObject::invokeMethod
+#define NYA_TIME_FORMAT "yyyy-MM-dd hh:mm:ss"
+
+#include "LogNya.hpp"
 
 #endif	/* _NYA_HPP */
 

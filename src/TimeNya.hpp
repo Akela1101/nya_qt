@@ -15,8 +15,6 @@ inline time_t timeUTC() { return std::time(0); }
 
 namespace Nya
 {
-	extern QString timeFormat;
-
 	QString GetDurationString(int d);
 	QString GetTimeString(time_t time);
 	Qt::GlobalColor GetWeekdayColor(uchar weekday);

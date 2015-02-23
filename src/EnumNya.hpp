@@ -29,6 +29,10 @@ enum MyEnum
 	K(Six)
 NYA_ENUM(MyEnum, MyEnumDef)
 
+// Maybe you'll need some undefs before:
+#undef One
+#undef Two
+
 // Getting string:
 const char* s = etos(One);
 

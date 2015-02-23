@@ -4,6 +4,8 @@
  *
  ****************************************************/
 
+#include "Nya.hpp"
+
 #include <map>
 
 #include "TimeNya.hpp"
@@ -11,8 +13,6 @@
 
 namespace Nya
 {
-QString timeFormat = "yyyy-MM-dd hh:mm:ss";
-
 /**
  * Упрощённая строка длительности.
  */
@@ -29,7 +29,7 @@ QString GetDurationString(int d)
  */
 QString GetTimeString(time_t time)
 {
-	return QDateTime::fromTime_t(time).toString(timeFormat);
+	return QDateTime::fromTime_t(time).toString(NYA_TIME_FORMAT);
 }
 
 /**

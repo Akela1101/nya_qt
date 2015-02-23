@@ -4,6 +4,8 @@
  *
  ****************************************************/
 
+#include <QRegExp>
+#include <QStringList>
 #include <QTextStream>
 
 #include "Nya.hpp"
@@ -38,7 +40,7 @@ void Config::Load(QTextStream& its, bool isMainConfig)
 				{
 					key = keyValue[1];
 
-					// Добавить переменную. Если уже есть, заменить.					
+					// Добавить переменную. Если уже есть, заменить.
 					insert(key, keyValue[2]);
 					isValid = true;
 				}
