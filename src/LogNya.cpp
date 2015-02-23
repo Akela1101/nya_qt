@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextCodec>
+#include <QMutex>
 
 #include "LogNya.hpp"
 
@@ -98,10 +99,13 @@ Logger& Log::AddLogger(LogLevel level, const QString& filePath, bool isRewrite)
  */
 void Log::WriteAll(const QString& message, LogLevel level)
 {
+	static QMutex mutex;
+	mutex.lock();
 	for( auto& logger : loggers )
 	{
 		if( logger->level <= level ) logger->Write(message);
 	}
+	mutex.unlock();
 }
 
 //=================================================================
