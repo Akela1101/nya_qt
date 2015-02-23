@@ -1,3 +1,9 @@
+/****************************************************
+ *
+ * Copyright (c) 2015 Akela1101 <akela1101@gmail.com>
+ *
+ ****************************************************/
+
 #include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
@@ -16,7 +22,7 @@ Logger::Logger(LogLevel level)
 {}
 
 /**
- * Output codec: UTF-8, UTF-16, CP1251, KOI-8R, ...
+ * Output codec: UTF-8, UTF-16, CP1251, IBM866, KOI-8R, ...
  */
 void Logger::SetOutputCodec(const QByteArray& outputCodec)
 {
@@ -32,7 +38,7 @@ public:
 	LoggerConsole(LogLevel level)
 		: Logger(level)
 	{
-		f.open(level <= INFO ? stdout : stderr, QIODevice::WriteOnly);
+		f.open(stdout, QIODevice::WriteOnly);
 	}
 
 	virtual void Write(const QString& message)
@@ -70,6 +76,9 @@ public:
 Logger& Log::AddLogger(LogLevel level)
 {
 	auto logger = make_s_p<LoggerConsole>(level);
+#ifdef Q_OS_WIN
+	logger->SetOutputCodec("CP1251");
+#endif
 	loggers.push_back(logger);
 	return *logger;
 }

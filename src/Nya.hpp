@@ -1,11 +1,11 @@
 /****************************************************
  *
- * Author: Akela1101 <akela1101@gmail.com>
+ * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
  *
  ****************************************************/
 
-#ifndef _NYA_HPP
-#define	_NYA_HPP
+#ifndef NYA_HPP
+#define	NYA_HPP
 
 // Try to include this file to the last of all includes,
 // because of some necessary #defines.
@@ -41,5 +41,5 @@ typedef unsigned long long udint;
 
 #include "LogNya.hpp"
 
-#endif	/* _NYA_HPP */
+#endif	/* NYA_HPP */
 

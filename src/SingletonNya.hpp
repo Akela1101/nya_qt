@@ -1,6 +1,6 @@
 /****************************************************
  *
- * Author: Akela1101 <akela1101@gmail.com>
+ * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
  *
  ****************************************************/
 
@@ -41,7 +41,7 @@ namespace Nya
 		}
 		// delete (in case it must be deleted before exit)
 		static void Delete() { delete instance; }
-	};	
+	};
 	template<typename T> T* Singleton<T>::instance = 0;
 	template<typename T> bool Singleton<T>::isAllocated = false;
 

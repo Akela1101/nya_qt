@@ -1,6 +1,6 @@
 /****************************************************
  *
- * Author: Akela1101 <akela1101@gmail.com>
+ * Copyright (c) 2015 Akela1101 <akela1101@gmail.com>
  *
  ****************************************************/
 
@@ -10,7 +10,7 @@
 /*
 Example:
 {
-	Nya::Log::GS().AddLogger(Nya::TRACE).SetOutputCodec("CP1251");
+	Nya::Log::GS().AddLogger(Nya::TRACE);
 	Nya::Log::GS().AddLogger(Nya::INFO, "info.log");
 
 	l_trace << QString::fromUtf8("Первая строка.");

@@ -1,6 +1,6 @@
 /****************************************************
  *
- * Author: Akela1101 <akela1101@gmail.com>
+ * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
  *
  ****************************************************/
 
@@ -36,7 +36,7 @@ namespace Nya
 static const char* Demangle(const char* symbol)
 {
 	char* temp = new char[256];
-	// First, try to demangle a c++ name.
+	// first, try to demangle a c++ name
 	if( 1 == sscanf(symbol, "%*[^(]%*[^_]%255[^)+]", temp) )
 	{
 		size_t size;
@@ -46,12 +46,12 @@ static const char* Demangle(const char* symbol)
 			return demangled;
 		}
 	}
-	// If that didn't work, try to get a regular c symbol.
+	// if that didn't work, try to get a regular c symbol
 	if( 1 == sscanf(symbol, "%255s", temp) )
 	{
 		return temp;
 	}
-	// If all else fails, just return the symbol.
+	// if all else fails, just return the symbol
 	return symbol;
 }
 #else
@@ -103,7 +103,7 @@ void SystemSignalHandler(int iSignal)
 		return;
 	}
 
-	// Add crash log to log.
+	// add crash log to log
 	l_fail << "Catched segfault!";
 	void *stack[512];
 	size_t size = backtrace(stack, 512);
@@ -114,7 +114,7 @@ void SystemSignalHandler(int iSignal)
 		l_fail << Demangle(s[i]);
 	}
 
-	// Move log → log_crash
+	// move log → log_crash
 	QFile::rename(pApp->traceLogPath, pApp->crashLogPath);
 
 	if( pApp->isRestartOnCrash )
@@ -136,51 +136,51 @@ Application::~Application()
 {}
 
 /**
- * Инициализация.
+ * Init.
  */
 bool Application::Init()
 {
 	appName = QFileInfo(QCoreApplication::applicationFilePath()).baseName();
 	if( !appName.size() ) appName = "_unknown_application_name_";
 
-	// Сделать мьютекс, чтобы в inno setup выключать.
+	// mutex for inno setup
 #ifdef Q_OS_WIN
-	CreateMutexA(0, 0, appName.toUtf8()); /*
+	CreateMutexA(0, 0, appName.toUtf8());
 	if( ERROR_ALREADY_EXISTS == GetLastError() )
 	{
 		l_info << "Cannot start. Application already running.";
-		exit(2);
-	}*/
+		return false;
+	}
 #endif
 
-	// Задать кодек по умолчанию для QString из сишных строк.
+	// default QString convertion encoding
 	QTextCodec *codec = QTextCodec::codecForName("UTF-8");
 	QTextCodec::setCodecForLocale(codec);
 #if QT_VERSION < 0x050000
 	QTextCodec::setCodecForCStrings(codec);
 #endif
 
-	// Выставлять текущую директорию там, где бинарник.
+	// set current directory in ./
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
 
-	// Задать главную папку с системными конфигами всех программ.
+	// set system config folder
 #ifdef Q_OS_WIN
 	rootConfigDir = MakeDirPath(QDir::fromNativeSeparators(qgetenv("APPDATA")));
 #else
 	rootConfigDir = QDir::homePath() + "/.config/";
 #endif
 
-	// Глобальная переменная на случай сбоя.
+	// global variable!
 	pApp = this;
 
-	// Задать обработчик системных прерываний.
+	// sistem signal handler
 	signal(SIGSEGV, SystemSignalHandler);
 	signal(SIGTERM, SystemSignalHandler);
 	return true;
 }
 
 /**
- * Корректный выход.
+ * Correct exit.
  */
 void Application::Quit()
 {
@@ -189,11 +189,11 @@ void Application::Quit()
 }
 
 /**
- * Сохранить настройки.
+ * Save configuration.
  */
 bool Application::SaveConfig()
 {
-	// Сохранить обновлённый конфиг.
+	// save updated config
 	QFile configFile(configFileFullName);
 	if( !configFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text) )
 	{
@@ -208,14 +208,14 @@ bool Application::SaveConfig()
 }
 
 /**
- * Загрузить настройки.
+ * Load configuration.
  */
 void Application::LoadConfig(QString configDir_, QString configFileName)
 {
-	// Задать имя конфига.
+	// set config name
 	if( !configFileName.size() ) configFileName = appName + ".cfg";
 
-	// Если папка явно указана, тогда выбирать её.
+	// set folder from argument if there is
 	if( configDir_.size() )
 	{
 		configDir = MakeDirPath(configDir_);
@@ -224,10 +224,9 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 			configDir = "";
 		}
 	}
-	// Иначе попытаться создать конфиги в домашней или в текущей папке.
+	// else try home or current folder
 	if( !configDir.size() )
 	{
-		// Создать директорию с конфигами.
 		configDir = rootConfigDir + appName + "/";
 		if( !MakeDirIfNone(configDir) )
 		{
@@ -240,7 +239,7 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 	}
 	configFileFullName = configDir + configFileName;
 
-	// Загрузить конфиг по умолчанию.
+	// load default config
 	QString defaultConfigFileName = ":/" + configFileName;
 	QFile defaultConfigFile(defaultConfigFileName);
 	if( defaultConfigFile.open(QIODevice::ReadOnly | QIODevice::Text) )
@@ -250,7 +249,7 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 		defaultConfigFile.close();
 	}
 
-	// Обновить существующим конфигом, если есть.
+	// update with current config
 	QFile configFile(configFileFullName);
 	if( configFile.open(QIODevice::ReadOnly | QIODevice::Text) )
 	{
@@ -259,7 +258,7 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 		configFile.close();
 	}
 
-	// Обновить константным конфигом, если есть.
+	// update with constant config
 	QFile constConfigFile(defaultConfigFileName + ".const");
 	if( constConfigFile.open(QIODevice::ReadOnly | QIODevice::Text) )
 	{
@@ -268,10 +267,10 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 		constConfigFile.close();
 	}
 
-	// Сохранить обновлённый конфиг.
+	// save updated config
 	SaveConfig();
 
-	// Переводы.
+	// translations
 	QTranslator* translator = new QTranslator(qApp);
 	QString lang = config["LANG"];
 	if( lang.size() && translator->load(lang + ".qm", ":/tr") )
@@ -279,36 +278,35 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 		qApp->installTranslator(translator);
 	}
 
-	// Инициализировать логи.
+	// logs
 	InitLogs();
 	l_info << "Config in [" << configDir << "]";
 	l_trace << "Logs (LOG_DIR) in [" << logDir << "]";
 }
 
 /**
- * Инициализировать логи.
- * Кроме того, если последний сбой был давно, разрешить перезапуск.
- *
- * true, если лог сбоя есть и начат давно → отослать его админу.
+ * Initialize logs.
+ * Save crash log if any.
  */
 void Application::InitLogs()
 {
-	// Если папка для логов не указана, назначить для этого папку с конфигами.
+	// set config dir as logs dir
 	logDir = config["LOG_DIR"];
 	logDir = logDir.size() ? Nya::MakeDirPath(logDir) : configDir;
+	Nya::MakeDirIfNone(logDir);
 
+	// set file names
 	QString mainLogPath = logDir + "main.log";
 	traceLogPath = logDir + "trace.log";
 	crashLogPath = logDir + "crash.log";
 
-	Nya::MakeDirIfNone(logDir);
-	QFile::remove(traceLogPath);
-
-	Log::GS().AddLogger(TRACE, traceLogPath);
+	// add loggers
+	Log::GS().AddLogger(TRACE);
+	Log::GS().AddLogger(TRACE, traceLogPath, true);
 	Log::GS().AddLogger(INFO, mainLogPath);
 
+	// check for crashes
 	QFileInfo crashLogInfo(crashLogPath);
-	// Если предыдущего лога нет, или есть, но начат давно, разрешить перезапуск в-случае-чего.
 	if( !crashLogInfo.exists() )
 	{
 		isRestartOnCrash = true;
@@ -317,15 +315,15 @@ void Application::InitLogs()
 	{
 		QFile crashFile(crashLogPath);
 		crashFile.open(QIODevice::ReadOnly);
-		char s[22]; // Чтение времени.
-		crashFile.read(s, 21);
-		QDateTime crashLogInfoCreatedTime = QDateTime::fromString(QString(s), NYA_TIME_FORMAT);
+		char sTime[22];
+		crashFile.read(sTime, 21);
+		QDateTime crashLogInfoCreatedTime = QDateTime::fromString(QString(sTime), NYA_TIME_FORMAT);
 
-		// Проверка на случай, если перезапускается очень часто.
+		// check if too frequent restarts
 		int delta = timeUTC() - crashLogInfoCreatedTime.toTime_t();
 		if( delta > 300 ) // 5 min.
 		{
-			l_info << "Crash delta = " << delta << " time = " << QDateTime::fromTime_t(timeUTC());
+			l_info << "Crash delta = " << delta << " time = " << sTime;
 			isRestartOnCrash = true;
 
 			QFile::rename(crashLogPath, logDir + "crashToSend.log");

@@ -1,6 +1,6 @@
 /****************************************************
  *
- * Author: Akela1101 <akela1101@gmail.com>
+ * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
  *
  ****************************************************/
 
@@ -11,8 +11,8 @@
 
 namespace Nya
 {
-    QString MakeDirPath(const QString& dir);
-    bool MakeDirIfNone(const QString& dir);
+	QString MakeDirPath(const QString& dir);
+	bool MakeDirIfNone(const QString& dir);
 }
 
 #endif // DIRNYA_H

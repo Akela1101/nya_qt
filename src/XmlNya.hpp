@@ -1,11 +1,23 @@
 /****************************************************
  *
- * Author: Akela1101 <akela1101@gmail.com>
+ * Copyright (c) 2014 Akela1101 <akela1101@gmail.com>
  *
  ****************************************************/
 
 #ifndef XMLNYA_H
 #define XMLNYA_H
+
+/*
+Usage:
+	while( ss.ReadNextChild() )
+	{
+		QStringRef s = ss.name();
+		if( s == "a1" ) a1 = ss.ReadElement().toLatin1();
+		else if( s == "a2" ) a2 = ss.ReadElement().toDouble();
+		// ...
+		else ss.SkipElement();
+	}
+*/
 
 #include <QXmlStreamReader>
 #include <QHash>
@@ -19,7 +31,8 @@ namespace Nya
 class XmlReader : public QXmlStreamReader
 {
 public:
-	static void PrintHumanReadableXml(QIODevice* deviceOut, char* data);
+	static QString ToFormatted(char* data);
+	static QString ToHumanReadable(char* data);
 
 	using QXmlStreamReader::QXmlStreamReader;
 
