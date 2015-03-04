@@ -42,11 +42,14 @@ namespace Nya
 
 	protected:
 		bool SaveConfig();
-		void LoadConfig(QString configDir_ = "", QString configFileName = "");
+		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
 		void InitLogs();
 
 	protected slots:
 		virtual void Quit();
+
+	signals:
+		void SignalConfigLoaded();
 	};
 }
 

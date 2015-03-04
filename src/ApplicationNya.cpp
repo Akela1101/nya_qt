@@ -143,16 +143,6 @@ bool Application::Init()
 	appName = QFileInfo(QCoreApplication::applicationFilePath()).baseName();
 	if( !appName.size() ) appName = "_unknown_application_name_";
 
-	// mutex for inno setup
-#ifdef Q_OS_WIN
-	CreateMutexA(0, 0, appName.toUtf8());
-	if( ERROR_ALREADY_EXISTS == GetLastError() )
-	{
-		l_info << "Cannot start. Application already running.";
-		return false;
-	}
-#endif
-
 	// default QString convertion encoding
 	QTextCodec *codec = QTextCodec::codecForName("UTF-8");
 	QTextCodec::setCodecForLocale(codec);
@@ -210,7 +200,7 @@ bool Application::SaveConfig()
 /**
  * Load configuration.
  */
-void Application::LoadConfig(QString configDir_, QString configFileName)
+bool Application::LoadConfig(QString configDir_, QString configFileName)
 {
 	// set config name
 	if( !configFileName.size() ) configFileName = appName + ".cfg";
@@ -282,6 +272,20 @@ void Application::LoadConfig(QString configDir_, QString configFileName)
 	InitLogs();
 	l_info << "Config in [" << configDir << "]";
 	l_trace << "Logs (LOG_DIR) in [" << logDir << "]";
+
+	// run once (mutex is also used in inno setup)
+#ifdef Q_OS_WIN
+	QByteArray appId = config["APP_ID"].toUtf8();
+	if( !appId.size() ) appId = appName.toUtf8();
+	CreateMutexA(0, 0, appId);
+	if( ERROR_ALREADY_EXISTS == GetLastError() )
+	{
+		l_info << "Cannot start. Application \"" + appId + "\" is already running.";
+		return false;
+	}
+#endif
+	emit SignalConfigLoaded();
+	return true;
 }
 
 /**
