@@ -43,6 +43,8 @@ namespace Nya
 	protected:
 		bool SaveConfig();
 		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
+
+	private:
 		void InitLogs();
 
 	protected slots:

@@ -7,9 +7,6 @@
 #ifndef TIMENYA_H
 #define TIMENYA_H
 
-#include <ctime>
-inline time_t timeUTC() { return std::time(0); }
-
 #include <QString>
 #include <QDateTime>
 

@@ -85,7 +85,7 @@ class LogStream
 	s_p<LogStreamShared> shared; // for logging from multiple lines
 
 public:
-	LogStream(LogLevel level, const char* file, int line);
+	LogStream(LogLevel level, const char* file = 0, int line = 0);
 	LogStream(const LogStream& o) : shared(o.shared) {}
 
 	LogStream& operator<< (const QVariant& value);
@@ -96,5 +96,11 @@ public:
 #define l_info  Nya::LogStream(Nya::INFO,  __FILE__, __LINE__)
 #define l_error Nya::LogStream(Nya::ERROR, __FILE__, __LINE__)
 #define l_fail  Nya::LogStream(Nya::FAIL,  __FILE__, __LINE__)
+// without prefix:
+#define o_trace Nya::LogStream(Nya::TRACE)
+#define o_info  Nya::LogStream(Nya::INFO)
+#define o_error Nya::LogStream(Nya::ERROR)
+#define o_fail  Nya::LogStream(Nya::FAIL)
+
 
 #endif // LOGNYA_H

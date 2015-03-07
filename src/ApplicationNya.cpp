@@ -16,8 +16,10 @@
 #include <QTranslator>
 #include <cstdio>
 #include <csignal>
+#include <cxxabi.h>
 #ifdef Q_OS_WIN
 #    include <windows.h>
+#    include <Dbghelp.h>
 #endif
 
 #include "ApplicationNya.hpp"
@@ -25,69 +27,70 @@
 
 namespace Nya
 {
+static const int stackSize = 100;
+static const int symbolLength = 256;
+
 #ifndef Q_OS_WIN
-#include <cxxabi.h>
-#include <execinfo.h>
+#    include <execinfo.h>
+#endif
+/**
+ * Backtrace functions for windows.
+ *
+ * For static backtrace on windows:
+ *   dlltool -k -d libdbghelp.def -l dbghelp.a
+ */
+static size_t backtrace(void *stack[], int stackSize)
+{
+	HANDLE pProcess = GetCurrentProcess();
+	SymInitialize(pProcess, 0, true);
+	return CaptureStackBackTrace(0, stackSize, stack, 0);
+}
+static char** backtrace_symbols(void *stack[], size_t size)
+{
+	HANDLE pProcess = GetCurrentProcess();
+	char** ret = new char*[size];
+	for( int i = 0; i < size; ++i )
+	{
+		SYMBOL_INFO* symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + symbolLength, 1);
+		symbol->MaxNameLen = symbolLength - 1;
+		symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+		SymFromAddr(pProcess, (intptr_t)stack[i], 0, symbol);
+		ret[i] = symbol->Name;
+	}
+	return ret;
+}
+
 /**
  * Demangle function names.
  *
- * e.g.: * _ZN4nyan4nyanE → nyan::nyan()
+ * e.g.: _ZN4nyan4nyanE → nyan::nyan()
  */
+#ifdef __GNUC__
 static const char* Demangle(const char* symbol)
 {
-	char* temp = new char[256];
-	// first, try to demangle a c++ name
-	if( 1 == sscanf(symbol, "%*[^(]%*[^_]%255[^)+]", temp) )
+	// add _ before Z for mingw
+	if( symbol[0] == 'Z' )
 	{
-		size_t size;
-		int status;
-		if( char* demangled = abi::__cxa_demangle(temp, 0, &size, &status) )
-		{
-			return demangled;
-		}
+		char* symbol2 = new char[symbolLength + 1];
+		symbol2[0] = '_';
+		strcpy(symbol2 + 1, symbol);
+		symbol = symbol2;
 	}
-	// if that didn't work, try to get a regular c symbol
-	if( 1 == sscanf(symbol, "%255s", temp) )
-	{
-		return temp;
-	}
-	// if all else fails, just return the symbol
+	//char* sDemangled = new char[symbolLength];
+	//sscanf(symbol, "%*[^(]%*[^_]%255[^)+]", sDemangled);
+	int status;
+	if( char* sDemangled = abi::__cxa_demangle(symbol, 0, 0, &status) )	return sDemangled;
+	return symbol;
+}
+#elif defined _MSC_VER
+static const char* Demangle(const char* symbol)
+{
+	char* sDemangled = new char[symbolLength];
+	if( UnDecorateSymbolName(symbol, sDemangled, symbolLength, 0) ) return sDemangled;
 	return symbol;
 }
 #else
 static const char* Demangle(const char* symbol) { return symbol; }
-static size_t backtrace(void**, int) { return 0; }
-static char** backtrace_symbols(void**, size_t) { return 0; }
-
-/*
-  If you want backtrace on windows, add dbghelp library.
-	  dlltool -k -d libdbghelp.def -l dbghelp.a
-
-#include <Dbghelp.h>
-static size_t backtrace(void *stack[], int stackSize)
-{
-//	HANDLE pProcess = GetCurrentProcess();
-//	SymInitialize(pProcess, 0, true);
-
-	return CaptureStackBackTrace(0, stackSize, stack, 0);
-}
-
-static char** backtrace_symbols(void *stack[], size_t size)
-{
-	HANDLE pProcess = GetCurrentProcess();
-
-	char** ret = new char*[size];
-	for( int i = 0; i < size; ++i )
-	{
-		SYMBOL_INFO* symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + 256, 1);
-		symbol->MaxNameLen   = 255;
-		symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-		SymFromAddr(pProcess, (DWORD)stack[ i ], 0, symbol);
-
-		ret[i] = symbol->Name;
-	}
-	return ret;
-}*/
 #endif
 
 /**
@@ -104,29 +107,31 @@ void SystemSignalHandler(int iSignal)
 	}
 
 	// add crash log to log
-	l_fail << "Catched segfault!";
-	void *stack[512];
-	size_t size = backtrace(stack, 512);
-
+	l_fail << "Application crashed:";
+	void *stack[stackSize];
+	size_t size = backtrace(stack, stackSize);
 	char** s = backtrace_symbols(stack, size);
-	for( uint i = 2; i < size; ++i )
+	for( uint i = 0; i < size; ++i )
 	{
-		l_fail << Demangle(s[i]);
+		if( *s[i] ) o_fail << Demangle(s[i]);
 	}
 
-	// move log → log_crash
-	QFile::rename(pApp->traceLogPath, pApp->crashLogPath);
+	// copy trace.log → crash.log (move can fail)
+	bool isCopied = QFile::copy(pApp->traceLogPath, pApp->crashLogPath);
 
-	if( pApp->isRestartOnCrash )
+	// restart app
+	if( isCopied && pApp->isRestartOnCrash )
 	{
 		QStringList args;
 		if( !pApp->isDaemon ) args << "-n";
-		l_fail << "Restart app: "<< QProcess::startDetached(QCoreApplication::applicationFilePath(),
-														   args, QCoreApplication::applicationDirPath());
+		l_fail << "Restart app: "
+			   << QProcess::startDetached(QCoreApplication::applicationFilePath(),
+										  args, QCoreApplication::applicationDirPath());
 	}
 	signal(iSignal, SIG_DFL);
-	l_fail << "Quick exit from crashed app.";
+
 #ifndef Q_OS_WIN
+	l_fail << "Quick exit from crashed app.";
 	quick_exit(3);
 #endif
 }
@@ -140,6 +145,10 @@ Application::~Application()
  */
 bool Application::Init()
 {
+	// global variable!
+	pApp = this;
+
+	// app name
 	appName = QFileInfo(QCoreApplication::applicationFilePath()).baseName();
 	if( !appName.size() ) appName = "_unknown_application_name_";
 
@@ -156,14 +165,15 @@ bool Application::Init()
 	// set system config folder
 #ifdef Q_OS_WIN
 	rootConfigDir = MakeDirPath(QDir::fromNativeSeparators(qgetenv("APPDATA")));
+	SetErrorMode(0x7); // disable useless dialog boxes for errors
 #else
 	rootConfigDir = QDir::homePath() + "/.config/";
 #endif
 
-	// global variable!
-	pApp = this;
-
 	// sistem signal handler
+	signal(SIGABRT, SystemSignalHandler);
+	signal(SIGILL, SystemSignalHandler);
+	signal(SIGFPE, SystemSignalHandler);
 	signal(SIGSEGV, SystemSignalHandler);
 	signal(SIGTERM, SystemSignalHandler);
 	return true;
@@ -257,6 +267,22 @@ bool Application::LoadConfig(QString configDir_, QString configFileName)
 		constConfigFile.close();
 	}
 
+	// logs
+	InitLogs();
+
+	// run once (mutex is also used in inno setup)
+#ifdef Q_OS_WIN
+	QByteArray appId = config["APP_ID"].toUtf8();
+	if( !appId.size() ) appId = appName.toUtf8();
+	CreateMutexA(0, 0, appId);
+	if( ERROR_ALREADY_EXISTS == GetLastError() )
+	{
+		l_info << "Cannot start. Application \"" + appId + "\" is already running.";
+		Quit();
+		return false;
+	}
+#endif
+
 	// save updated config
 	SaveConfig();
 
@@ -268,22 +294,9 @@ bool Application::LoadConfig(QString configDir_, QString configFileName)
 		qApp->installTranslator(translator);
 	}
 
-	// logs
-	InitLogs();
-	l_info << "Config in [" << configDir << "]";
+	l_trace << "Config in [" << configDir << "]";
 	l_trace << "Logs (LOG_DIR) in [" << logDir << "]";
 
-	// run once (mutex is also used in inno setup)
-#ifdef Q_OS_WIN
-	QByteArray appId = config["APP_ID"].toUtf8();
-	if( !appId.size() ) appId = appName.toUtf8();
-	CreateMutexA(0, 0, appId);
-	if( ERROR_ALREADY_EXISTS == GetLastError() )
-	{
-		l_info << "Cannot start. Application \"" + appId + "\" is already running.";
-		return false;
-	}
-#endif
 	emit SignalConfigLoaded();
 	return true;
 }
@@ -300,39 +313,27 @@ void Application::InitLogs()
 	Nya::MakeDirIfNone(logDir);
 
 	// set file names
-	QString mainLogPath = logDir + "main.log";
+	QString infoLogPath = logDir + "info.log";
 	traceLogPath = logDir + "trace.log";
 	crashLogPath = logDir + "crash.log";
 
 	// add loggers
 	Log::GS().AddLogger(TRACE);
 	Log::GS().AddLogger(TRACE, traceLogPath, true);
-	Log::GS().AddLogger(INFO, mainLogPath);
+	Log::GS().AddLogger(INFO, infoLogPath);
 
-	// check for crashes
-	QFileInfo crashLogInfo(crashLogPath);
-	if( !crashLogInfo.exists() )
+	// prevent frequent restarts
+	QFile crashFile(crashLogPath);
+	if( crashFile.exists() )
 	{
-		isRestartOnCrash = true;
-	}
-	else
-	{
-		QFile crashFile(crashLogPath);
+		// checks first line time, so it must be right!
 		crashFile.open(QIODevice::ReadOnly);
 		char sTime[22];
 		crashFile.read(sTime, 21);
-		QDateTime crashLogInfoCreatedTime = QDateTime::fromString(QString(sTime), NYA_TIME_FORMAT);
-
-		// check if too frequent restarts
-		int delta = timeUTC() - crashLogInfoCreatedTime.toTime_t();
-		if( delta > 300 ) // 5 min.
-		{
-			l_info << "Crash delta = " << delta << " time = " << sTime;
-			isRestartOnCrash = true;
-
-			QFile::rename(crashLogPath, logDir + "crashToSend.log");
-			//todo: virtual function for network send mail.
-		}
+		QDateTime tCreated = QDateTime::fromString(QString(sTime), NYA_TIME_FORMAT);
+		if( tCreated.secsTo(QDateTime::currentDateTime()) < 300 ) return; // 5 min.
 	}
+
+	isRestartOnCrash = true;
 }
 }

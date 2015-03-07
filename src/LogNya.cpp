@@ -117,12 +117,15 @@ struct LogStreamShared
 	LogStreamShared(LogLevel level, const char* file, int line)
 		: level(level)
 	{
-		const QString& timeFormat = Log::GS().GetTimeFormat();
-		message += QString(Log::GS().GetMessageFormat())
-				.arg(QDateTime::currentDateTime().toString(timeFormat))
-				.arg(etos(level))
-				.arg(QFileInfo(file).fileName())
-				.arg(line);
+		if( file )
+		{
+			const QString& timeFormat = Log::GS().GetTimeFormat();
+			message += QString(Log::GS().GetMessageFormat())
+					.arg(QDateTime::currentDateTime().toString(timeFormat))
+					.arg(etos(level))
+					.arg(QFileInfo(file).fileName())
+					.arg(line);
+		}
 	}
 	~LogStreamShared()
 	{
