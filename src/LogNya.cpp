@@ -5,9 +5,11 @@
  ****************************************************/
 
 #include <QDateTime>
+#include <QtGlobal>
 #include <QFile>
 #include <QFileInfo>
 #include <QTextCodec>
+#include <QTextStream>
 #include <QMutex>
 
 #include "LogNya.hpp"
@@ -72,6 +74,43 @@ public:
 
 //=================================================================
 /**
+ * QDebug output.
+ */
+#if QT_VERSION < 0x050000
+void WriteQDebug(QtMsgType type, const char* message)
+{
+	switch( type )
+	{
+	case QtDebugMsg:    Log::GS().WriteAll(message, TRACE); return;
+	case QtWarningMsg:  Log::GS().WriteAll(message, INFO); return;
+	case QtCriticalMsg: Log::GS().WriteAll(message, ERROR); return;
+	case QtFatalMsg:    Log::GS().WriteAll(message, FAIL); return;
+	}
+}
+#else
+void WriteQDebug(QtMsgType type, const QMessageLogContext& context, const QString& message)
+{
+	switch( type )
+	{
+	case QtDebugMsg:    LogStream(TRACE, context.file, context.line) << message; return;
+	case QtWarningMsg:  LogStream(INFO, context.file, context.line) << message; return;
+	case QtCriticalMsg: LogStream(ERROR, context.file, context.line) << message; return;
+	case QtFatalMsg:    LogStream(FAIL, context.file, context.line) << message; return;
+	}
+}
+#endif
+
+//=================================================================
+Log::Log()
+{
+#if QT_VERSION < 0x050000
+	qInstallMsgHandler(WriteQDebug);
+#else
+	qInstallMessageHandler(WriteQDebug);
+#endif
+}
+
+/**
  * Add console output.
  */
 Logger& Log::AddLogger(LogLevel level)
@@ -119,12 +158,11 @@ struct LogStreamShared
 	{
 		if( file )
 		{
-			const QString& timeFormat = Log::GS().GetTimeFormat();
 			message += QString(Log::GS().GetMessageFormat())
-					.arg(QDateTime::currentDateTime().toString(timeFormat))
-					.arg(etos(level))
-					.arg(QFileInfo(file).fileName())
-					.arg(line);
+				.arg(QDateTime::currentDateTime().toString(Log::GS().GetTimeFormat()))
+				.arg(etos(level))
+				.arg(QFileInfo(file).fileName())
+				.arg(line);
 		}
 	}
 	~LogStreamShared()

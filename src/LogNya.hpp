@@ -67,6 +67,7 @@ class Log : public Singleton<Log>
 	QVector<s_p<Logger>> loggers;               /// loggers list
 
 public:
+	Log();
 	QString GetTimeFormat() const { return timeFormat; }
 	QString GetMessageFormat() const { return messageFormat; }
 	void SetTimeFormat(const QString& timeFormat) { this->timeFormat = timeFormat; }

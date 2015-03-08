@@ -97,6 +97,7 @@ static const char* Demangle(const char* symbol) { return symbol; }
  * Function for catching system signals like SIGSEGV.
  */
 static Application* pApp;
+static QDateTime tAppStart;
 void SystemSignalHandler(int iSignal)
 {
 	if( iSignal == SIGTERM )
@@ -106,7 +107,7 @@ void SystemSignalHandler(int iSignal)
 		return;
 	}
 
-	// add crash log to log
+	// add backtrace to log
 	l_fail << "Application crashed:";
 	void *stack[stackSize];
 	size_t size = backtrace(stack, stackSize);
@@ -116,14 +117,15 @@ void SystemSignalHandler(int iSignal)
 		if( *s[i] ) o_fail << Demangle(s[i]);
 	}
 
-	// copy trace.log → crash.log (move can fail)
-	bool isCopied = QFile::copy(pApp->traceLogPath, pApp->crashLogPath);
-
-	// restart app
-	if( isCopied && pApp->isRestartOnCrash )
+	// if running long enough (5 min)
+	if( tAppStart.secsTo(QDateTime::currentDateTime()) > 300 )
 	{
-		QStringList args;
-		if( !pApp->isDaemon ) args << "-n";
+		pApp->SendCrash();
+
+		// restart app
+		QStringList args = qApp->arguments();
+		args.pop_front();
+		if( !pApp->isDaemon ) args << "-n"; //todo: ! -d
 		l_fail << "Restart app: "
 			   << QProcess::startDetached(QCoreApplication::applicationFilePath(),
 										  args, QCoreApplication::applicationDirPath());
@@ -145,8 +147,9 @@ Application::~Application()
  */
 bool Application::Init()
 {
-	// global variable!
+	// global variables!
 	pApp = this;
+	tAppStart = QDateTime::currentDateTime();
 
 	// app name
 	appName = QFileInfo(QCoreApplication::applicationFilePath()).baseName();
@@ -177,15 +180,6 @@ bool Application::Init()
 	signal(SIGSEGV, SystemSignalHandler);
 	signal(SIGTERM, SystemSignalHandler);
 	return true;
-}
-
-/**
- * Correct exit.
- */
-void Application::Quit()
-{
-	l_info << "Quit application called!";
-	InvMet(qApp, "quit", Qt::QueuedConnection);
 }
 
 /**
@@ -321,19 +315,27 @@ void Application::InitLogs()
 	Log::GS().AddLogger(TRACE);
 	Log::GS().AddLogger(TRACE, traceLogPath, true);
 	Log::GS().AddLogger(INFO, infoLogPath);
+}
 
-	// prevent frequent restarts
-	QFile crashFile(crashLogPath);
-	if( crashFile.exists() )
+/**
+ * Send crash log.
+ */
+void Application::SendCrash()
+{
+	// copy trace.log → crash.log (move can fail)
+	QFile::copy(traceLogPath, crashLogPath);
+	if( OnCrashLog(crashLogPath) )
 	{
-		// checks first line time, so it must be right!
-		crashFile.open(QIODevice::ReadOnly);
-		char sTime[22];
-		crashFile.read(sTime, 21);
-		QDateTime tCreated = QDateTime::fromString(QString(sTime), NYA_TIME_FORMAT);
-		if( tCreated.secsTo(QDateTime::currentDateTime()) < 300 ) return; // 5 min.
+		QFile::remove(crashLogPath);
 	}
+}
 
-	isRestartOnCrash = true;
+/**
+ * Correct exit.
+ */
+void Application::Quit()
+{
+	l_info << "Quit application called!";
+	InvMet(qApp, "quit", Qt::QueuedConnection);
 }
 }

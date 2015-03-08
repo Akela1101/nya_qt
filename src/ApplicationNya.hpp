@@ -29,10 +29,9 @@ namespace Nya
 		QString robotEmail;           /// e-mail for alerts
 		Config config;                /// config
 		bool isDaemon;                /// daemon or usual
-		bool isRestartOnCrash;        /// restart on crash
 
 	public:
-		Application() : isDaemon(false), isRestartOnCrash(false) {}
+		Application() : isDaemon(false) {}
 		virtual ~Application() = 0;
 
 		QString GetConfigDir() const { return configDir; }
@@ -41,11 +40,15 @@ namespace Nya
 		virtual bool Init(); /// must be called!
 
 	protected:
+		/// on success crash.log will be removed
+		virtual bool OnCrashLog(const QString& crashLogPath) { (void)crashLogPath; return false; }
+
 		bool SaveConfig();
 		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
 
 	private:
 		void InitLogs();
+		void SendCrash();
 
 	protected slots:
 		virtual void Quit();
