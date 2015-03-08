@@ -1,31 +1,29 @@
-# Приложение.
 contains(TEMPLATE, app) {
+# app
 	DESTDIR = bin/
 }
 else {
+# lib
 	DESTDIR = ./
-}
 
-# Библиотека.
-contains(TEMPLATE, lib) {
-	!CONFIG(dll) : CONFIG += static
+	!CONFIG(dll) {
+		CONFIG -= shared
+		CONFIG += static
+	}
 
-	# Добавить d к имени отладочной библиотеки.
+	# add d to debug lib
 	CONFIG(debug, debug|release) {
 		TARGET = $${TARGET}d
 	}
 }
 
-# Дополнительные #define-ы
 CONFIG(debug, debug|release) {
+# debug
 	DEFINES += _DEBUG NDEBUG
-}
-
-# Задать папки для сборки
-CONFIG(debug, debug|release) {
 	build_mode = debug
 }
 else {
+# release
 	build_mode = release
 }
 OBJECTS_DIR = build/$${build_mode}/obj
@@ -33,22 +31,66 @@ MOC_DIR = build/$${build_mode}/moc
 UI_HEADERS_DIR = build/$${build_mode}/ui_h
 RCC_DIR = build/$${build_mode}/rcc
 
-# GCC
-QMAKE_CXXFLAGS *= \
-	-std=c++0x \ # Собирать новым сиплюсплюсом ввиду его особой няшности.
-	-fopenmp \ # Open MP
-	-U__STRICT_ANSI__ \ # На всякий случай включить макрос для ansi.
-	-MMD \ # Добавить несистемные хедеры в зависимости.
-	-Wno-unused-local-typedefs \ # отрубление ворнинга.
-	-Wno-sign-compare # сравнение знаковых и беззнаковых чисел.
 
-QMAKE_LFLAGS *= -fopenmp
-LIBS *= -static-libgcc -static
+*-g++ {
+	QMAKE_CXXFLAGS *= \
+		-std=c++0x \
+		-fopenmp \
+		-U__STRICT_ANSI__ \
+		-MMD \ # add some headers
+		-Wno-unused-local-typedefs \
+		-Wno-sign-compare # for u numbers
+	QMAKE_LFLAGS *= -fopenmp
 
-DEFINES += QXT_STATIC
+	win32 {
+		QMAKE_CXXFLAGS *= \
+			-fno-strict-aliasing \  # silent pointer dereferencing
+			-fpermissive \ # disables some danger errors!
+			-Wno-type-limits # disables: "comparison is always false"
+		QMAKE_LFLAGS *= \
+			--enable-runtime-pseudo-reloc # for dll ( http://www.mingw.org/wiki/sampleDLL )
+	}
 
+	# static & start group of libs
+	LIBS += -static-libgcc -static -Wl,--start-group
+}
+win32 {
+	# boost
+	boostRoot = $$(BOOST_ROOT)
+	isEmpty(boostRoot) {
+		!build_pass:error(No environment variable `BOOST_ROOT`. E.g.: BOOST_ROOT=c:\\boost)
+	} else {
+		INCLUDEPATH += $$boostRoot
+		LIBS += -L$${boostRoot}/stage/lib
+	}
 
-# Мои функции
+	# openssl
+	sslRoot = $$(SSL_ROOT)
+	isEmpty(sslRoot) {
+		!build_pass:error(No environment variable `SSL_ROOT`. E.g.: SSL_ROOT=c:\\openssl)
+	} else {
+		INCLUDEPATH += $${sslRoot}/include
+		libPath += $${sslRoot}/lib
+
+		# Static build must include ssl! (-openssl-linked)
+		# define QT_STATIC = 1
+		isEmpty(QT_STATIC) {
+			libs += crypto
+		}
+	}
+
+	# backtrace
+	LIBS += -ldbghelp
+}
+else: *-g++ {
+	# backtrace
+	QMAKE_CXXFLAGS_RELEASE -= -O2
+	QMAKE_CXXFLAGS_RELEASE += -O1
+	QMAKE_LFLAGS *= -rdynamic
+}
+
+# --- Functions ---
+# concatenate */src
 defineReplace(_src) {
 	path =
 	for(arg, ARGS) {
@@ -56,7 +98,7 @@ defineReplace(_src) {
 	}
 	return($$path)
 }
-
+# concatenate -L*
 defineReplace(_L) {
 	path =
 	for(arg, ARGS) {
@@ -64,14 +106,7 @@ defineReplace(_L) {
 	}
 	return($$path)
 }
-
-# Библиотеки подключаются в обратном порядке,
-# чтобы ld мог найти зависимости. Подробнее:
-# http://www.delorie.com/djgpp/v2faq/faq8_10.html
-#
-# Если вдруг случится, что зависимость кольцевая,
-# надо юзать: -Wl,--start-group,-lLib1,-lLib2,--end-group
-# как и написано в этом факе.
+# concatenate -l*[d]
 defineReplace(_l_d) {
 	path =
 	for(arg, ARGS) {

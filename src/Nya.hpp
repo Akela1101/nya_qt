@@ -41,5 +41,8 @@ typedef unsigned long long udint;
 
 #include "LogNya.hpp"
 
+// Empty object singleton
+template<class T> const T& EmptyObject() { static T t; return t; }
+
 #endif	/* NYA_HPP */
 
