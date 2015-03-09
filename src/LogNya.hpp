@@ -10,8 +10,8 @@
 /*
 Example:
 {
-	Nya::Log::GS().AddLogger(Nya::TRACE);
-	Nya::Log::GS().AddLogger(Nya::INFO, "info.log");
+	NyaLog.AddLogger(Nya::TRACE); // console
+	NyaLog.AddLogger(Nya::INFO, "info.log"); // file
 
 	l_trace << QString::fromUtf8("Первая строка.");
 	auto log = l_info << QString::fromUtf8("Вторая строка: ");
@@ -93,11 +93,13 @@ public:
 };
 }
 
+#define NyaLog  Nya::Log::GS()
+// with time, file, line:
 #define l_trace Nya::LogStream(Nya::TRACE, __FILE__, __LINE__)
 #define l_info  Nya::LogStream(Nya::INFO,  __FILE__, __LINE__)
 #define l_error Nya::LogStream(Nya::ERROR, __FILE__, __LINE__)
 #define l_fail  Nya::LogStream(Nya::FAIL,  __FILE__, __LINE__)
-// without prefix:
+// without:
 #define o_trace Nya::LogStream(Nya::TRACE)
 #define o_info  Nya::LogStream(Nya::INFO)
 #define o_error Nya::LogStream(Nya::ERROR)

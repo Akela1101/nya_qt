@@ -75,7 +75,7 @@ win32 {
 		# Static build must include ssl! (-openssl-linked)
 		# define QT_STATIC = 1
 		isEmpty(QT_STATIC) {
-			libs += crypto
+			LIBS += -lcrypto
 		}
 	}
 

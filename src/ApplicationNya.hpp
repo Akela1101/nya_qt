@@ -41,7 +41,7 @@ namespace Nya
 
 	protected:
 		/// on success crash.log will be removed
-		virtual bool OnCrashLog(const QString& crashLogPath) { (void)crashLogPath; return false; }
+		virtual void OnCrashLog(const QString& crashLogPath) { (void)crashLogPath; }
 
 		bool SaveConfig();
 		bool LoadConfig(QString configDir_ = "", QString configFileName = "");

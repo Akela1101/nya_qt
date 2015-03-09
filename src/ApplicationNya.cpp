@@ -324,10 +324,8 @@ void Application::SendCrash()
 {
 	// copy trace.log → crash.log (move can fail)
 	QFile::copy(traceLogPath, crashLogPath);
-	if( OnCrashLog(crashLogPath) )
-	{
-		QFile::remove(crashLogPath);
-	}
+	QFile::remove(crashLogPath);
+	OnCrashLog(crashLogPath);
 }
 
 /**
