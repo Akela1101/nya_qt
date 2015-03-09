@@ -6,7 +6,7 @@
 
 namespace Nya
 {
-	class ApplicationDaemonBase : public Application
+	class ApplicationDaemon : public Application
 	{
 	public:
 		bool Init(int argc, char *argv[]);

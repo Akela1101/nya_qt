@@ -5,10 +5,10 @@ include(pri/include.pri)
 
 
 HEADERS += \
+	src/Nya.hpp \
 	src/ApplicationNya.hpp \
 	src/ConfigNya.hpp \
 	src/DirNya.hpp \
-	src/Nya.hpp \
 	src/SingletonNya.hpp \
 	src/TimeNya.hpp \
 	src/EnumNya.hpp \
@@ -17,7 +17,8 @@ HEADERS += \
 	src/LogNya.hpp \
 	src/ApplicationDaemonNya.hpp \
 	src/ApplicationGuiNya.hpp \
-	src/CryptoNya.hpp
+	src/CryptoNya.hpp \
+	src/StreamNya.hpp
 
 SOURCES += \
 	src/ApplicationNya.cpp \
@@ -28,4 +29,5 @@ SOURCES += \
 	src/LogNya.cpp \
 	src/ApplicationDaemonNya.cpp \
 	src/ApplicationGuiNya.cpp \
-	src/CryptoNya.cpp
+	src/CryptoNya.cpp \
+	src/StreamNya.cpp

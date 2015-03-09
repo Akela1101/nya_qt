@@ -16,8 +16,10 @@ namespace Nya
 /**
  * Init.
  */
-bool ApplicationDaemonBase::Init(int argc, char *argv[])
+bool ApplicationDaemon::Init(int argc, char *argv[])
 {
+	if( !Application::Init() ) return false;
+
 	// Демонизация:
 #ifndef Q_OS_UNIX
 	(void)argc; (void)argv;

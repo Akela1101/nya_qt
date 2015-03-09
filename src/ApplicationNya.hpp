@@ -40,7 +40,6 @@ namespace Nya
 		virtual bool Init(); /// must be called!
 
 	protected:
-		/// on success crash.log will be removed
 		virtual void OnCrashLog(const QString& crashLogPath) { (void)crashLogPath; }
 
 		bool SaveConfig();
