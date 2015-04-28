@@ -312,9 +312,9 @@ void Application::InitLogs()
 	crashLogPath = logDir + "crash.log";
 
 	// add loggers
-	Log::GS().AddLogger(TRACE);
-	Log::GS().AddLogger(TRACE, traceLogPath, true);
-	Log::GS().AddLogger(INFO, infoLogPath);
+	NyaLog.AddLogger(TRACE);
+	NyaLog.AddLogger(TRACE, traceLogPath, true);
+	NyaLog.AddLogger(INFO, infoLogPath);
 }
 
 /**

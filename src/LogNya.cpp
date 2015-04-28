@@ -81,10 +81,10 @@ void WriteQDebug(QtMsgType type, const char* message)
 {
 	switch( type )
 	{
-	case QtDebugMsg:    Log::GS().WriteAll(message, TRACE); return;
-	case QtWarningMsg:  Log::GS().WriteAll(message, INFO); return;
-	case QtCriticalMsg: Log::GS().WriteAll(message, ERROR); return;
-	case QtFatalMsg:    Log::GS().WriteAll(message, FAIL); return;
+	case QtDebugMsg:    NyaLog.WriteAll(message, TRACE); return;
+	case QtWarningMsg:  NyaLog.WriteAll(message, INFO); return;
+	case QtCriticalMsg: NyaLog.WriteAll(message, ERROR); return;
+	case QtFatalMsg:    NyaLog.WriteAll(message, FAIL); return;
 	}
 }
 #else
@@ -158,8 +158,8 @@ struct LogStreamShared
 	{
 		if( file )
 		{
-			message += QString(Log::GS().GetMessageFormat())
-				.arg(QDateTime::currentDateTime().toString(Log::GS().GetTimeFormat()))
+			message += QString(NyaLog.GetMessageFormat())
+				.arg(QDateTime::currentDateTime().toString(NyaLog.GetTimeFormat()))
 				.arg(etos(level))
 				.arg(QFileInfo(file).fileName())
 				.arg(line);
@@ -167,7 +167,7 @@ struct LogStreamShared
 	}
 	~LogStreamShared()
 	{
-		Log::GS().WriteAll(message + '\n', level);
+		NyaLog.WriteAll(message + '\n', level);
 	}
 };
 

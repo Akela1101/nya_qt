@@ -34,7 +34,7 @@ case_( "three" )
 {
 	std::cout << "!!!\n";
 }
-switchD( s )
+switchD( s ) // default
 {
 	std::cout << "Non-non\n";
 }
@@ -47,14 +47,19 @@ switch_( s )
 
 #include <functional>
 
+// first case must define types
 #define c___c(MT, T, op) static const MT<T, std::function<void(void)>> m___m = { { op, [&]()
 #define case_(op)        }, { op, [&]()
 #define switch_(s)       } }; auto i___i = m___m.find(s); auto i___end = m___m.end(); if( i___i != i___end ) i___i->second();
 #define switchD(s)       switch_(s) else
 
+// std::string
 #define caseS(op) c___c(std::unordered_map, std::string, op)
-// For QT 5:
-#define caseQ(op) c___c(QHash, QString, op)
-
+// any pointer
+#define caseP(op) c___c(std::unordered_map, void*, op)
+// QString
+#if QT_VERSION >= 0x050000
+#    define caseQ(op) c___c(QHash, QString, op)
+#endif
 
 #endif // SWITCHNYA_H

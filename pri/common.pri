@@ -39,7 +39,9 @@ RCC_DIR = build/$${build_mode}/rcc
 		-U__STRICT_ANSI__ \
 		-MMD \ # add some headers
 		-Wno-unused-local-typedefs \
-		-Wno-sign-compare # for u numbers
+		-Wno-sign-compare \ # for u numbers
+		-pipe # maybe faster but uses more RAM
+
 	QMAKE_LFLAGS *= -fopenmp
 
 	win32 {
@@ -47,6 +49,7 @@ RCC_DIR = build/$${build_mode}/rcc
 			-fno-strict-aliasing \  # silent pointer dereferencing
 			-fpermissive \ # disables some danger errors!
 			-Wno-type-limits # disables: "comparison is always false"
+
 		QMAKE_LFLAGS *= \
 			--enable-runtime-pseudo-reloc # for dll ( http://www.mingw.org/wiki/sampleDLL )
 	}
