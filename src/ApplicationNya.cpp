@@ -8,11 +8,12 @@
 #include "TimeNya.hpp"
 
 #include <QCoreApplication>
-#include <QProcess>
-#include <QFile>
-#include <QTextStream>
 #include <QDir>
+#include <QFile>
+#include <QProcess>
 #include <QTextCodec>
+#include <QTextStream>
+#include <QTimer>
 #include <QTranslator>
 #include <cstdio>
 #include <csignal>
@@ -34,7 +35,7 @@ static const int symbolLength = 256;
 #    include <execinfo.h>
 #endif
 /**
- * Backtrace functions for windows.
+ * Backtrace functions for windows (doesn't work properly sometimes >.<).
  *
  * For static backtrace on windows:
  *   dlltool -k -d libdbghelp.def -l dbghelp.a
@@ -42,6 +43,7 @@ static const int symbolLength = 256;
 static size_t backtrace(void *stack[], int stackSize)
 {
 	HANDLE pProcess = GetCurrentProcess();
+	//SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
 	SymInitialize(pProcess, 0, true);
 	return CaptureStackBackTrace(0, stackSize, stack, 0);
 }
@@ -117,7 +119,7 @@ void SystemSignalHandler(int iSignal)
 		if( *s[i] ) o_fail << Demangle(s[i]);
 	}
 
-	// if running long enough (5 min)
+	// if running long enough (5 min), restart.
 	if( tAppStart.secsTo(QDateTime::currentDateTime()) > 300 )
 	{
 		pApp->SendCrash();
@@ -125,7 +127,7 @@ void SystemSignalHandler(int iSignal)
 		// restart app
 		QStringList args = qApp->arguments();
 		args.pop_front();
-		if( !pApp->isDaemon ) args << "-n"; //todo: ! -d
+		if( !pApp->isDaemon ) args << "-n" << "-r"; //todo: -d == not -n
 		l_fail << "Restart app: "
 			   << QProcess::startDetached(QCoreApplication::applicationFilePath(),
 										  args, QCoreApplication::applicationDirPath());
@@ -269,7 +271,7 @@ bool Application::LoadConfig(QString configDir_, QString configFileName)
 	QByteArray appId = config["APP_ID"].toUtf8();
 	if( !appId.size() ) appId = appName.toUtf8();
 	CreateMutexA(0, 0, appId);
-	if( ERROR_ALREADY_EXISTS == GetLastError() )
+	if( ERROR_ALREADY_EXISTS == GetLastError() && !qApp->arguments().contains("-r") )
 	{
 		l_info << "Cannot start. Application \"" + appId + "\" is already running.";
 		Quit();
@@ -323,9 +325,20 @@ void Application::InitLogs()
 void Application::SendCrash()
 {
 	// copy trace.log → crash.log (move can fail)
-	QFile::copy(traceLogPath, crashLogPath);
 	QFile::remove(crashLogPath);
-	OnCrashLog(crashLogPath);
+	QFile::copy(traceLogPath, crashLogPath);
+
+	QFile fCrash(crashLogPath);
+	if( fCrash.open(QIODevice::ReadOnly) && receivers(SIGNAL(SignalMessageCrash(QString))) )
+	{
+		emit SignalMessageCrash(fCrash.readAll());
+
+		// wait for crash be sent
+		QEventLoop loop;
+		connect(this, SIGNAL(SignalCrashSent()), &loop, SLOT(quit()));
+		QTimer::singleShot(5000, &loop, SLOT(quit()));
+		loop.exec();
+	}
 }
 
 /**

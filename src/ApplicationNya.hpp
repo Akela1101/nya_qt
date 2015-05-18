@@ -40,8 +40,6 @@ namespace Nya
 		virtual bool Init(); /// must be called!
 
 	protected:
-		virtual void OnCrashLog(const QString& crashLogPath) { (void)crashLogPath; }
-
 		bool SaveConfig();
 		bool LoadConfig(QString configDir_ = "", QString configFileName = "");
 
@@ -54,6 +52,8 @@ namespace Nya
 
 	signals:
 		void SignalConfigLoaded();
+		void SignalMessageCrash(QString text);
+		void SignalCrashSent(); // call on sent
 	};
 }
 
