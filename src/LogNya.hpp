@@ -63,7 +63,7 @@ public:
 class Log : public QObject, public Singleton<Log>
 {
 	Q_OBJECT
-	QString timeFormat = NYA_TIME_FORMAT;       /// yyyy-MM-dd hh:mm:ss
+	QString timeFormat = NYA_DT_FORMAT;       /// yyyy-MM-dd hh:mm:ss
 	QString messageFormat = "[%1] %2 [%3:%4] "; /// time level file line
 	QVector<s_p<Logger>> loggers;               /// loggers list
 

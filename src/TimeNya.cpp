@@ -29,7 +29,7 @@ QString GetDurationString(int d)
  */
 QString GetTimeString(time_t time)
 {
-	return QDateTime::fromTime_t(time).toString(NYA_TIME_FORMAT);
+	return QDateTime::fromTime_t(time).toString(NYA_DT_FORMAT);
 }
 
 /**

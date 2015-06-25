@@ -115,7 +115,7 @@ Log::Log()
  */
 Logger& Log::AddLogger(LogLevel level)
 {
-	auto logger = make_s_p<LoggerConsole>(level);
+	auto logger = make_s<LoggerConsole>(level);
 #ifdef Q_OS_WIN
 	logger->SetOutputCodec("CP1251");
 #endif
@@ -128,7 +128,7 @@ Logger& Log::AddLogger(LogLevel level)
  */
 Logger& Log::AddLogger(LogLevel level, const QString& filePath, bool isRewrite)
 {
-	auto logger = make_s_p<LoggerFile>(level, filePath, isRewrite);
+	auto logger = make_s<LoggerFile>(level, filePath, isRewrite);
 	loggers.push_back(logger);
 	return *logger;
 }
