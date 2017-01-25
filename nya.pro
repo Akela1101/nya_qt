@@ -17,8 +17,7 @@ HEADERS += \
 	src/LogNya.hpp \
 	src/ApplicationDaemonNya.hpp \
 	src/ApplicationGuiNya.hpp \
-	src/StreamNya.hpp \
-    src/CryptoNya.hpp
+    src/StreamNya.hpp
 
 SOURCES += \
 	src/ApplicationNya.cpp \
@@ -29,5 +28,9 @@ SOURCES += \
 	src/LogNya.cpp \
 	src/ApplicationDaemonNya.cpp \
 	src/ApplicationGuiNya.cpp \
-	src/StreamNya.cpp \
-    src/CryptoNya.cpp
+    src/StreamNya.cpp
+
+ssl {
+    HEADERS += src/CryptoNya.hpp
+    SOURCES += src/CryptoNya.cpp
+}

@@ -58,29 +58,33 @@ RCC_DIR = build/$${build_mode}/rcc
 	LIBS += -static-libgcc -static -Wl,--start-group
 }
 win32 {
-	# boost
-	boostRoot = $$(BOOST_ROOT)
-	isEmpty(boostRoot) {
-		!build_pass:error(No environment variable `BOOST_ROOT`. E.g.: BOOST_ROOT=c:\\boost)
-	} else {
-		INCLUDEPATH += $$boostRoot
-		LIBS += -L$${boostRoot}/stage/lib
-	}
+    boost {
+        # boost
+        boostRoot = $$(BOOST_ROOT)
+        isEmpty(boostRoot) {
+            !build_pass:error(No environment variable `BOOST_ROOT`. E.g.: BOOST_ROOT=c:\\boost)
+        } else {
+            INCLUDEPATH += $$boostRoot
+            LIBS += -L$${boostRoot}/stage/lib
+        }
+    }
 
-	# openssl
-	sslRoot = $$(SSL_ROOT)
-	isEmpty(sslRoot) {
-		!build_pass:error(No environment variable `SSL_ROOT`. E.g.: SSL_ROOT=c:\\openssl)
-	} else {
-		INCLUDEPATH += $${sslRoot}/include
-		libPath += $${sslRoot}/lib
+    ssl {
+        # openssl
+        sslRoot = $$(SSL_ROOT)
+        isEmpty(sslRoot) {
+            !build_pass:error(No environment variable `SSL_ROOT`. E.g.: SSL_ROOT=c:\\openssl)
+        } else {
+            INCLUDEPATH += $${sslRoot}/include
+            libPath += $${sslRoot}/lib
 
-		# Static build must include ssl! (-openssl-linked)
-		# define QT_STATIC = 1
-		isEmpty(QT_STATIC) {
-			LIBS += -lcrypto
-		}
-	}
+            # Static build must include ssl! (-openssl-linked)
+            # define QT_STATIC = 1
+            isEmpty(QT_STATIC) {
+                LIBS += -lcrypto
+            }
+        }
+    }
 
 	# backtrace
 	LIBS += -ldbghelp
