@@ -17,7 +17,9 @@
 #include <QTranslator>
 #include <cstdio>
 #include <csignal>
-#include <cxxabi.h>
+#ifdef __GNUC__
+#    include <cxxabi.h>
+#endif
 #ifdef Q_OS_WIN
 #    include <windows.h>
 #    include <Dbghelp.h>
