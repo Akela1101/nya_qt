@@ -39,7 +39,8 @@ RCC_DIR = build/$${build_mode}/rcc
 		-U__STRICT_ANSI__ \
 		-MMD \ # add some headers
 		-Wno-unused-local-typedefs \
-		-Wno-sign-compare \ # for u numbers
+		-Wno-sign-compare \     # for u numbers
+		-Wno-old-style-cast \   # () instead of casts
 		-pipe # maybe faster but uses more RAM
 
 	QMAKE_LFLAGS *= -fopenmp

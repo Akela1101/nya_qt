@@ -23,7 +23,6 @@
 #define u_p std::unique_ptr
 #define s_p std::shared_ptr
 #define w_p std::weak_ptr
-#define mv_ std::move
 #define sp_cast std::static_pointer_cast
 #define dp_cast std::dynamic_pointer_cast
 #define make_p std::make_pair
