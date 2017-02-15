@@ -48,7 +48,7 @@ switch_( s )
 #include <functional>
 
 // first case must define types
-#define c___c(MT, T, op) static const MT<T, std::function<void(void)>> m___m = { { op, [&]()
+#define c___c(MT, T, op) const MT<T, std::function<void(void)>> m___m = { { op, [&]()
 #define case_(op)        }, { op, [&]()
 #define switch_(s)       } }; auto i___i = m___m.find(s); auto i___end = m___m.end(); if( i___i != i___end ) i___i->second();
 #define switchD(s)       switch_(s) else
