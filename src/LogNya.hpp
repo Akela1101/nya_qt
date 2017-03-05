@@ -10,12 +10,15 @@
 /*
 Example:
 {
+	NyaLog.SetTimeFormat("yyyy-MM-dd hh:mm:ss.zzz");
+	NyaLog.SetMessageFormat("[%1] %2 [%3:%4] ");
+
 	NyaLog.AddLogger(Nya::TRACE); // console
 	NyaLog.AddLogger(Nya::INFO, "info.log"); // file
 
-	l_trace << QString::fromUtf8("Первая строка.");
-	auto log = l_info << QString::fromUtf8("Вторая строка: ");
-	log << QString::fromUtf8("состоит из двух.");
+	l_trace << "First string";
+	auto log = l_info << "Second string";
+	log << " continues";
 }
 */
 
@@ -27,8 +30,6 @@ Example:
 #include <QVariant>
 #include <QVector>
 
-
-class QTextCodec;
 
 namespace Nya
 {
@@ -47,14 +48,13 @@ NYA_ENUM(LogLevel, LogLevelDef)
 // ~~~
 class Logger
 {
-public:
 	LogLevel level;
-protected:
-	QTextCodec* codec;
 
 public:
 	Logger(LogLevel level);
-	void SetOutputCodec(const QByteArray& outputCodec);
+	virtual ~Logger() = 0;
+
+	LogLevel GetLogLevel() const { return level; }
 
 	virtual void Write(const QString& message) = 0;
 };
@@ -74,8 +74,14 @@ public:
 	void SetTimeFormat(const QString& timeFormat) { this->timeFormat = timeFormat; }
 	void SetMessageFormat(const QString& messageFormat) { this->messageFormat = messageFormat; }
 
-	Logger& AddLogger(LogLevel level);
-	Logger& AddLogger(LogLevel level, const QString& filePath, bool isRewrite = false);
+#ifdef Q_OS_WIN
+	void AddConsoleLogger(LogLevel level, const QByteArray& codecName = "CP1251");
+#else
+	void AddConsoleLogger(LogLevel level, const QByteArray& codecName = "UTF-8");
+#endif
+	void AddFileLogger(LogLevel level, const QString& filePath, bool isRewrite = false
+					  , const QByteArray& codecName = "UTF-8");
+	void AddLogger(s_p<Logger> logger);
 
 	void WriteAll(const QString& message, LogLevel level = TRACE);
 
@@ -84,7 +90,7 @@ private slots:
 };
 
 // ~~~
-class LogStreamShared;
+struct LogStreamShared;
 class LogStream
 {
 	s_p<LogStreamShared> shared; // for logging from multiple lines
