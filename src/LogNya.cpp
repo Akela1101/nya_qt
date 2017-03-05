@@ -21,25 +21,20 @@ namespace Nya
 // General
 Logger::Logger(LogLevel level)
 	: level(level)
-	, codec(QTextCodec::codecForName("UTF-8"))
 {}
 
-/**
- * Output codec: UTF-8, UTF-16, CP1251, IBM866, KOI-8R, ...
- */
-void Logger::SetOutputCodec(const QByteArray& outputCodec)
-{
-	codec = QTextCodec::codecForName(outputCodec);
-}
+Logger::~Logger() {}
 
 // Console
 class LoggerConsole : public Logger
 {
 	QFile f;
+	QTextCodec* codec;
 
 public:
-	LoggerConsole(LogLevel level)
+	LoggerConsole(LogLevel level, const QByteArray& codecName)
 		: Logger(level)
+		, codec(QTextCodec::codecForName(codecName))
 	{
 		f.open(stdout, QIODevice::WriteOnly);
 	}
@@ -55,11 +50,13 @@ public:
 class LoggerFile : public Logger
 {
 	QFile f;
+	QTextCodec* codec;
 
 public:
-	LoggerFile(LogLevel level, const QString& filePath, bool isRewrite)
+	LoggerFile(LogLevel level, const QString& filePath, bool isRewrite, const QByteArray& codecName)
 		: Logger(level)
 		, f(filePath)
+		, codec(QTextCodec::codecForName(codecName))
 	{
 		f.open(QIODevice::WriteOnly | (isRewrite ? QIODevice::Truncate : QIODevice::Append));
 	}
@@ -112,25 +109,30 @@ Log::Log()
 
 /**
  * Add console output.
+ * Output codecs: UTF-8, UTF-16, CP1251, IBM866, KOI-8R, ...
  */
-Logger& Log::AddLogger(LogLevel level)
+void Log::AddConsoleLogger(LogLevel level, const QByteArray& codecName)
 {
-	auto logger = make_s<LoggerConsole>(level);
-#ifdef Q_OS_WIN
-	logger->SetOutputCodec("CP1251");
-#endif
+	auto logger = make_s<LoggerConsole>(level, codecName);
 	loggers.push_back(logger);
-	return *logger;
 }
 
 /**
  * Add output to file.
  */
-Logger& Log::AddLogger(LogLevel level, const QString& filePath, bool isRewrite)
+void Log::AddFileLogger(LogLevel level, const QString& filePath, bool isRewrite
+        , const QByteArray& codecName)
 {
-	auto logger = make_s<LoggerFile>(level, filePath, isRewrite);
+	auto logger = make_s<LoggerFile>(level, filePath, isRewrite, codecName);
 	loggers.push_back(logger);
-	return *logger;
+}
+
+/**
+ * Add custom logger.
+ */
+void Log::AddLogger(s_p<Logger> logger)
+{
+    loggers.push_back(logger);
 }
 
 /**
@@ -142,7 +144,7 @@ void Log::WriteAll(const QString& message, LogLevel level)
 	mutex.lock();
 	for( auto& logger : loggers )
 	{
-		if( logger->level <= level ) logger->Write(message);
+		if( logger->GetLogLevel() <= level ) logger->Write(message);
 	}
 	mutex.unlock();
 }
@@ -173,7 +175,7 @@ struct LogStreamShared
 
 //=================================================================
 LogStream::LogStream(LogLevel level, const char* file, int line)
-	: shared(new LogStreamShared(level, file, line))
+    : shared(new LogStreamShared(level, file, line))
 {}
 
 /**

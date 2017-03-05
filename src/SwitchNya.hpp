@@ -43,6 +43,12 @@ switchD( s ) // default
 ...
 switch_( s )
 
+
+NB:
+This approach has some limitations as it uses lambda functions [&](){}.
+It can't return from case clause, because it will return from lambda.
+It should create lambdas on each call to capture local variables.
+
 */
 
 #include <functional>
