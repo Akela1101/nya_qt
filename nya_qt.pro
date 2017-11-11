@@ -1,7 +1,7 @@
 QT = core
 TEMPLATE = lib
 
-include(pri/include.pri)
+include(pri/common.pri)
 
 # nya library should be here
 INCLUDEPATH += ../nya/src

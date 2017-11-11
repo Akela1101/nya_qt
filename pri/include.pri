@@ -1,5 +1,5 @@
 # Нужно задать переменную libPath
 include(common.pri)
 
-INCLUDEPATH += src $$_src($$libPath) $$defInc
+INCLUDEPATH += src $$_src($$libPath)
 DEPENDPATH *= $${INCLUDEPATH}
