@@ -90,9 +90,9 @@ void WriteQDebug(QtMsgType type, const QMessageLogContext& context, const QStrin
 	switch( type )
 	{
 	case QtDebugMsg:    LogStream(TRACE, context.file, context.line) << message; return;
-	case QtWarningMsg:  LogStream(INFO, context.file, context.line) << message; return;
 	case QtCriticalMsg: LogStream(ERROR, context.file, context.line) << message; return;
 	case QtFatalMsg:    LogStream(FAIL, context.file, context.line) << message; return;
+	default:            LogStream(INFO, context.file, context.line) << message; return;
 	}
 }
 #endif
@@ -121,7 +121,7 @@ void Log::AddConsoleLogger(LogLevel level, const QByteArray& codecName)
  * Add output to file.
  */
 void Log::AddFileLogger(LogLevel level, const QString& filePath, bool isRewrite
-        , const QByteArray& codecName)
+		, const QByteArray& codecName)
 {
 	auto logger = make_s<LoggerFile>(level, filePath, isRewrite, codecName);
 	loggers.push_back(logger);
@@ -132,7 +132,7 @@ void Log::AddFileLogger(LogLevel level, const QString& filePath, bool isRewrite
  */
 void Log::AddLogger(s_p<Logger> logger)
 {
-    loggers.push_back(logger);
+	loggers.push_back(logger);
 }
 
 /**
@@ -175,7 +175,7 @@ struct LogStreamShared
 
 //=================================================================
 LogStream::LogStream(LogLevel level, const char* file, int line)
-    : shared(new LogStreamShared(level, file, line))
+	: shared(new LogStreamShared(level, file, line))
 {}
 
 /**

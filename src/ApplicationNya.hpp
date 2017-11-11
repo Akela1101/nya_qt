@@ -8,7 +8,7 @@
 #define ApplicationNya_H
 
 #include "ConfigNya.hpp"
-#include "Nya.hpp"
+#include "NyaQt.hpp"
 
 
 namespace Nya

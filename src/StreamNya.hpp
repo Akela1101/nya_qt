@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <limits>
 
-#include "Nya.hpp"
+#include "NyaQt.hpp"
 
 
 /**

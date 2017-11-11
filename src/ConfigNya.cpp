@@ -8,7 +8,7 @@
 #include <QStringList>
 #include <QTextStream>
 
-#include "Nya.hpp"
+#include "NyaQt.hpp"
 #include "ConfigNya.hpp"
 
 

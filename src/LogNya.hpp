@@ -24,7 +24,7 @@ Example:
 
 #include "EnumNya.hpp"
 #include "SingletonNya.hpp"
-#include "Nya.hpp"
+#include "NyaQt.hpp"
 
 #include <QString>
 #include <QVariant>

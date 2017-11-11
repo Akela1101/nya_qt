@@ -4,7 +4,7 @@
  *
  ****************************************************/
 
-#include "Nya.hpp"
+#include "NyaQt.hpp"
 
 #include <QDir>
 

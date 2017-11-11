@@ -9,7 +9,6 @@ Makefile*
 *.opensdf
 *.sdf
 *.suo
-*.vcxproj*
 *.user*
 *.autosave
 *.exe
@@ -18,6 +17,7 @@ Makefile*
 *.Release
 *.Debug
 *.rc
+*.inc
 
 bin/
 build/
@@ -25,6 +25,9 @@ build*/
 dist/
 Debug/
 Release/
+_debug/
+_release/
 ipch/
+.idea/
 
 !*.ts

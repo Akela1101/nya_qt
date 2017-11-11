@@ -1,6 +1,5 @@
-# Nya!
+*Some common staff for writing code with QT a bit faster*
 
-Some common staff for writing code with QT a bit faster, including:
 * Application base with config and error handling.
 * Cryptographic algorithms wrapping.
 * Directory check.
@@ -12,5 +11,3 @@ Some common staff for writing code with QT a bit faster, including:
 * Common time functions.
 * Xml functions wrapping.
 
----
-This library can be used without any limitations, so please fork instead of just copying files.

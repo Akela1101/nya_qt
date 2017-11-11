@@ -26,10 +26,6 @@ else {
 # release
 	build_mode = release
 }
-OBJECTS_DIR = build/$${build_mode}/obj
-MOC_DIR = build/$${build_mode}/moc
-UI_DIR = build/$${build_mode}/ui_h
-RCC_DIR = build/$${build_mode}/rcc
 
 
 *-g++ {
