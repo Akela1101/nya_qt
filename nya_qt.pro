@@ -15,7 +15,6 @@ HEADERS += \
 	src/SingletonNya.hpp \
 	src/TimeNya.hpp \
 	src/EnumNya.hpp \
-	src/SwitchNya.hpp \
 	src/XmlNya.hpp \
 	src/LogNya.hpp \
 	src/ApplicationDaemonNya.hpp \
