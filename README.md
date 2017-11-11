@@ -7,7 +7,5 @@
 * Small and handy logging.
 * Singleton implementation.
 * Data stream wrapping.
-* Switch-case implementation based on lambda.
 * Common time functions.
 * Xml functions wrapping.
-
