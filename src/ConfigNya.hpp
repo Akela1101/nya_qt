@@ -1,9 +1,3 @@
-/****************************************************
- *
- * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
- *
- ****************************************************/
-
 #ifndef CONFIGNYA_H
 #define CONFIGNYA_H
 
@@ -14,15 +8,15 @@
 
 class QTextStream;
 
-namespace Nya
+namespace nya
 {
-	class Config : public QHash<QString, QString>
-	{
-		QVector<QString> orderedKeys;
+class Config : public QHash<QString, QString>
+{
+	QVector<QString> orderedKeys;
 
-	public:
-		void Load(QTextStream& its, bool isMainConfig = true);
-		void Save(QTextStream& ots);
-	};
+public:
+	void Load(QTextStream& its, bool isMainConfig = true);
+	void Save(QTextStream& ots);
+};
 }
 #endif // CONFIGNYA_H

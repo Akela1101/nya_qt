@@ -5,7 +5,7 @@
 #include <QByteArray>
 
 
-namespace Nya
+namespace nya
 {
 class Crypto
 {

@@ -1,25 +1,19 @@
-/****************************************************
- *
- * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
- *
- ****************************************************/
-
 #include "NyaQt.hpp"
-
-#include <map>
 
 #include "TimeNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
 /**
  * Упрощённая строка длительности.
  */
 QString GetDurationString(int d)
 {
-	int day = d / 86400; d -= day * 86400;
-	int hour = d / 3600; d -= hour * 3600;
+	int day = d / 86400;
+	d -= day * 86400;
+	int hour = d / 3600;
+	d -= hour * 3600;
 	int min = d / 60;
 	return QString("%1 %2:%3").arg(day, 2).arg(hour, 2, 10, QChar('0')).arg(min, 2, 10, QChar('0'));
 }
@@ -38,7 +32,7 @@ QString GetTimeString(time_t time)
 Qt::GlobalColor GetWeekdayColor(uchar weekday)
 {
 	static std::map<uchar, Qt::GlobalColor> colors =
-	{
+			{
 //        { 1, Qt::darkGray },
 //        { 2, Qt::red },
 //        { 3, Qt::cyan },
@@ -46,14 +40,14 @@ Qt::GlobalColor GetWeekdayColor(uchar weekday)
 //        { 5, Qt::yellow },
 //        { 6, Qt::darkYellow },
 //        { 7, Qt::white }
-		{ 1, Qt::gray },
-		{ 2, Qt::gray },
-		{ 3, Qt::gray },
-		{ 4, Qt::gray },
-		{ 5, Qt::gray },
-		{ 6, Qt::darkRed },
-		{ 7, Qt::darkRed }
-	};
+					{ 1, Qt::gray },
+					{ 2, Qt::gray },
+					{ 3, Qt::gray },
+					{ 4, Qt::gray },
+					{ 5, Qt::gray },
+					{ 6, Qt::darkRed },
+					{ 7, Qt::darkRed }
+			};
 	return colors[weekday];
 }
 
@@ -63,7 +57,8 @@ Qt::GlobalColor GetWeekdayColor(uchar weekday)
 char GetTimeZone()
 {
 	QDateTime dt1 = QDateTime::currentDateTime();
-	QDateTime dt2 = dt1; dt2.setTimeSpec(Qt::UTC);
+	QDateTime dt2 = dt1;
+	dt2.setTimeSpec(Qt::UTC);
 	return char(dt1.secsTo(dt2) / 3600);
 }
 
@@ -78,7 +73,7 @@ char GetTimeZone()
  */
 int GetDayFromTime(const QDateTime& dateTime, char timeZone)
 {
-	return QDateTime::fromTime_t(0).toUTC().daysTo(dateTime.toUTC().addSecs(3600 * timeZone)) + 1;
+	return (int)QDateTime::fromTime_t(0).toUTC().daysTo(dateTime.toUTC().addSecs(3600 * timeZone)) + 1;
 }
 
 /**
@@ -100,7 +95,7 @@ QDateTime GetTimeFromDay(int day, char timeZone)
  */
 int GetDayFromTimeE(const QDateTime& dateTime, char timeZone)
 {
-	return QDateTime::fromTime_t(0).toUTC().daysTo(dateTime.toUTC().addSecs(3600 * timeZone));
+	return (int)QDateTime::fromTime_t(0).toUTC().daysTo(dateTime.toUTC().addSecs(3600 * timeZone));
 }
 
 /**

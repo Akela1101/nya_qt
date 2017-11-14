@@ -4,13 +4,14 @@
 #include "ApplicationNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
-	class ApplicationGui : public Application
-	{};
+class ApplicationGui : public Application
+{
+};
 
-	//
-	QString LoadStyles(const QStringList& fileNames);
+//
+QString LoadStyles(const QStringList& fileNames);
 }
 
 #endif // APPLICATIONGUINYA_H

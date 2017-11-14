@@ -11,18 +11,19 @@
 using namespace std;
 
 
-namespace Nya
+namespace nya
 {
 /**
  * Init.
  */
-bool ApplicationDaemon::Init(int argc, char *argv[])
+bool ApplicationDaemon::Init(int argc, char* argv[])
 {
-	if( !Application::Init() ) return false;
-
+	if (!Application::Init()) return false;
+	
 	// Демонизация:
 #ifndef Q_OS_UNIX
-	(void)argc; (void)argv;
+	(void) argc;
+	(void) argv;
 #else
 	if( argc == 1 || (string(argv[1]) != "--no-daemon" && string(argv[1]) != "-n") )
 	{

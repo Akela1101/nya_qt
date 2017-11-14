@@ -4,13 +4,13 @@
 #include "ApplicationNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
-	class ApplicationDaemon : public Application
-	{
-	public:
-		bool Init(int argc, char *argv[]);
-	};
+class ApplicationDaemon : public Application
+{
+public:
+	bool Init(int argc, char* argv[]);
+};
 }
 
 #endif // APPLICATIONDAEMONNYA_H

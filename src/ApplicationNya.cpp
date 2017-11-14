@@ -1,9 +1,3 @@
-/****************************************************
- *
- * Copyright (c) 2013 Akela1101 <akela1101@gmail.com>
- *
- ****************************************************/
-
 #include "DirNya.hpp"
 #include "TimeNya.hpp"
 
@@ -28,7 +22,7 @@
 #include "ApplicationNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
 static const int stackSize = 100;
 static const int symbolLength = 256;
@@ -42,23 +36,23 @@ static const int symbolLength = 256;
  * For static backtrace on windows:
  *   dlltool -k -d libdbghelp.def -l dbghelp.a
  */
-static size_t backtrace(void *stack[], int stackSize)
+static size_t backtrace(void* stack[], int stackSize)
 {
 	HANDLE pProcess = GetCurrentProcess();
 	//SymSetOptions(SYMOPT_DEFERRED_LOADS | SYMOPT_UNDNAME | SYMOPT_LOAD_LINES);
-	SymInitialize(pProcess, 0, true);
-	return CaptureStackBackTrace(0, stackSize, stack, 0);
+	SymInitialize(pProcess, nullptr, true);
+	return CaptureStackBackTrace(0, (DWORD) stackSize, stack, nullptr);
 }
-static char** backtrace_symbols(void *stack[], size_t size)
+static char** backtrace_symbols(void* stack[], size_t size)
 {
 	HANDLE pProcess = GetCurrentProcess();
-	char** ret = new char*[size];
-	for( int i = 0; i < size; ++i )
+	char** ret = new char* [size];
+	for (int i = 0; i < size; ++i)
 	{
-		SYMBOL_INFO* symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + symbolLength, 1);
+		SYMBOL_INFO* symbol = (SYMBOL_INFO*) calloc(sizeof(SYMBOL_INFO) + symbolLength, 1);
 		symbol->MaxNameLen = symbolLength - 1;
 		symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-		SymFromAddr(pProcess, (intptr_t)stack[i], 0, symbol);
+		SymFromAddr(pProcess, (DWORD64) stack[i], 0, symbol);
 		ret[i] = symbol->Name;
 	}
 	return ret;
@@ -73,7 +67,7 @@ static char** backtrace_symbols(void *stack[], size_t size)
 static const char* Demangle(const char* symbol)
 {
 	// add _ before Z for mingw
-	if( symbol[0] == 'Z' )
+	if (symbol[0] == 'Z')
 	{
 		char* symbol2 = new char[symbolLength + 1];
 		symbol2[0] = '_';
@@ -83,7 +77,7 @@ static const char* Demangle(const char* symbol)
 	//char* sDemangled = new char[symbolLength];
 	//sscanf(symbol, "%*[^(]%*[^_]%255[^)+]", sDemangled);
 	int status;
-	if( char* sDemangled = abi::__cxa_demangle(symbol, 0, 0, &status) )	return sDemangled;
+	if (char* sDemangled = abi::__cxa_demangle(symbol, nullptr, nullptr, &status)) return sDemangled;
 	return symbol;
 }
 #elif defined _MSC_VER
@@ -104,47 +98,46 @@ static Application* pApp;
 static QDateTime tAppStart;
 void SystemSignalHandler(int iSignal)
 {
-	if( iSignal == SIGTERM )
+	if (iSignal == SIGTERM)
 	{
-		l_info << "User requested termination.";
+		info_log << "User requested termination.";
 		pApp->Quit();
 		return;
 	}
-
+	
 	// add backtrace to log
-	l_fail << "Application crashed:";
-	void *stack[stackSize];
+	fatal_log << "Application crashed:";
+	void* stack[stackSize];
 	size_t size = backtrace(stack, stackSize);
 	char** s = backtrace_symbols(stack, size);
-	for( uint i = 0; i < size; ++i )
+	for (uint i = 0; i < size; ++i)
 	{
-		if( *s[i] ) o_fail << Demangle(s[i]);
+		if (*s[i]) fatal_raw << Demangle(s[i]);
 	}
-
+	
 	// if running long enough (5 min), restart.
-	if( tAppStart.secsTo(QDateTime::currentDateTime()) > 300 )
+	if (tAppStart.secsTo(QDateTime::currentDateTime()) > 300)
 	{
 		pApp->SendCrash();
-
+		
 		// restart app
 		QStringList args = qApp->arguments();
 		args.pop_front();
-		if( !pApp->isDaemon ) args << "-n" << "-r"; //todo: -d == not -n
-		l_fail << "Restart app: "
-			   << QProcess::startDetached(QCoreApplication::applicationFilePath(),
-										  args, QCoreApplication::applicationDirPath());
+		if (!pApp->isDaemon) args << "-n" << "-r"; //todo: -d == not -n
+		fatal_log << "Restart app: "
+		          << QProcess::startDetached(QCoreApplication::applicationFilePath(), args
+				          , QCoreApplication::applicationDirPath());
 	}
 	signal(iSignal, SIG_DFL);
 
 #ifndef Q_OS_WIN
-	l_fail << "Quick exit from crashed app.";
+	fatal_log << "Quick exit from crashed app.";
 	quick_exit(3);
 #endif
 }
 
 //=============================================================
-Application::~Application()
-{}
+Application::~Application() = default;
 
 /**
  * Init.
@@ -154,21 +147,21 @@ bool Application::Init()
 	// global variables!
 	pApp = this;
 	tAppStart = QDateTime::currentDateTime();
-
+	
 	// app name
 	appName = QFileInfo(QCoreApplication::applicationFilePath()).baseName();
-	if( !appName.size() ) appName = "_unknown_application_name_";
-
+	if (!appName.size()) appName = "_unknown_application_name_";
+	
 	// default QString convertion encoding
-	QTextCodec *codec = QTextCodec::codecForName("UTF-8");
+	QTextCodec* codec = QTextCodec::codecForName("UTF-8");
 	QTextCodec::setCodecForLocale(codec);
 #if QT_VERSION < 0x050000
 	QTextCodec::setCodecForCStrings(codec);
 #endif
-
+	
 	// set current directory in ./
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
-
+	
 	// set system config folder
 #ifdef Q_OS_WIN
 	rootConfigDir = MakeDirPath(QDir::fromNativeSeparators(qgetenv("APPDATA")));
@@ -176,7 +169,7 @@ bool Application::Init()
 #else
 	rootConfigDir = QDir::homePath() + "/.config/";
 #endif
-
+	
 	// sistem signal handler
 	signal(SIGABRT, SystemSignalHandler);
 	signal(SIGILL, SystemSignalHandler);
@@ -193,15 +186,15 @@ bool Application::SaveConfig()
 {
 	// save updated config
 	QFile configFile(configFileFullName);
-	if( !configFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text) )
+	if (!configFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
 	{
-		l_error << "Can't write: " << configFileFullName;
+		error_log << "Can't write: " << configFileFullName;
 		return false;
 	}
 	QTextStream ots(&configFile);
 	config.Save(ots);
 	configFile.close();
-	configFile.setPermissions((QFile::Permissions)0x664);
+	configFile.setPermissions((QFile::Permissions) 0x664);
 	return true;
 }
 
@@ -211,90 +204,90 @@ bool Application::SaveConfig()
 bool Application::LoadConfig(QString configDir_, QString configFileName)
 {
 	// set config name
-	if( !configFileName.size() ) configFileName = appName + ".cfg";
-
+	if (!configFileName.size()) configFileName = appName + ".cfg";
+	
 	// set folder from argument if there is
-	if( configDir_.size() )
+	if (configDir_.size())
 	{
 		configDir = MakeDirPath(configDir_);
-		if( !MakeDirIfNone(configDir) )
+		if (!MakeDirIfNone(configDir))
 		{
 			configDir = "";
 		}
 	}
 	// else try home or current folder
-	if( !configDir.size() )
+	if (!configDir.size())
 	{
 		configDir = rootConfigDir + appName + "/";
-		if( !MakeDirIfNone(configDir) )
+		if (!MakeDirIfNone(configDir))
 		{
 			configDir = QDir::currentPath() + "/.config/";
-			if( !MakeDirIfNone(configDir) )
+			if (!MakeDirIfNone(configDir))
 			{
 				configDir = "";
 			}
 		}
 	}
 	configFileFullName = configDir + configFileName;
-
+	
 	// load default config
 	QString defaultConfigFileName = ":/" + configFileName;
 	QFile defaultConfigFile(defaultConfigFileName);
-	if( defaultConfigFile.open(QIODevice::ReadOnly | QIODevice::Text) )
+	if (defaultConfigFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		QTextStream itsDefault(&defaultConfigFile);
 		config.Load(itsDefault);
 		defaultConfigFile.close();
 	}
-
+	
 	// update with current config
 	QFile configFile(configFileFullName);
-	if( configFile.open(QIODevice::ReadOnly | QIODevice::Text) )
+	if (configFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		QTextStream its(&configFile);
 		config.Load(its, false);
 		configFile.close();
 	}
-
+	
 	// update with constant config
 	QFile constConfigFile(defaultConfigFileName + ".const");
-	if( constConfigFile.open(QIODevice::ReadOnly | QIODevice::Text) )
+	if (constConfigFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		QTextStream its(&constConfigFile);
 		config.Load(its, false);
 		constConfigFile.close();
 	}
-
+	
 	// logs
 	InitLogs();
-
+	
 	// run once (mutex is also used in inno setup)
 #ifdef Q_OS_WIN
 	QByteArray appId = config["APP_ID"].toUtf8();
-	if( !appId.size() ) appId = appName.toUtf8();
-	CreateMutexA(0, 0, appId);
-	if( ERROR_ALREADY_EXISTS == GetLastError() && !qApp->arguments().contains("-r") )
+	if (!appId.size()) appId = appName.toUtf8();
+	CreateMutexA(nullptr, false, appId);
+	if (ERROR_ALREADY_EXISTS == GetLastError() && !qApp->arguments().contains("-r"))
 	{
-		l_info << "Cannot start. Application \"" + appId + "\" is already running.";
+		info_log << "Cannot start. Application \"" + appId + "\" is already running.";
 		Quit();
 		return false;
 	}
 #endif
-
+	
 	// save updated config
 	SaveConfig();
-
+	
 	// translations
 	QTranslator* translator = new QTranslator(qApp);
 	QString lang = config["LANG"];
-	if( lang.size() && translator->load(lang + ".qm", ":/tr") )
+	if (lang.size() && translator->load(lang + ".qm", ":/tr"))
 	{
 		qApp->installTranslator(translator);
 	}
-
-	l_trace << "Config in [" << configDir << "]";
-	l_trace << "Logs (LOG_DIR) in [" << logDir << "]";
-
+	
+	trace_log << "Config in [" << configDir << "]";
+	trace_log << "Logs (LOG_DIR) in [" << logDir << "]";
+	
 	emit SignalConfigLoaded();
 	return true;
 }
@@ -307,18 +300,15 @@ void Application::InitLogs()
 {
 	// set config dir as logs dir
 	logDir = config["LOG_DIR"];
-	logDir = logDir.size() ? Nya::MakeDirPath(logDir) : configDir;
-	Nya::MakeDirIfNone(logDir);
-
+	logDir = logDir.size() ? nya::MakeDirPath(logDir) : configDir;
+	nya::MakeDirIfNone(logDir);
+	
 	// set file names
 	QString infoLogPath = logDir + "info.log";
 	traceLogPath = logDir + "trace.log";
 	crashLogPath = logDir + "crash.log";
-
-	// add loggers
-	NyaLog.AddConsoleLogger(TRACE);
-	NyaLog.AddFileLogger(TRACE, traceLogPath, true);
-	NyaLog.AddFileLogger(INFO, infoLogPath);
+	
+	//TODO: configure loggers
 }
 
 /**
@@ -329,12 +319,12 @@ void Application::SendCrash()
 	// copy trace.log → crash.log (move can fail)
 	QFile::remove(crashLogPath);
 	QFile::copy(traceLogPath, crashLogPath);
-
+	
 	QFile fCrash(crashLogPath);
-	if( fCrash.open(QIODevice::ReadOnly) && receivers(SIGNAL(SignalMessageCrash(QString))) )
+	if (fCrash.open(QIODevice::ReadOnly) && receivers(SIGNAL(SignalMessageCrash(QString))))
 	{
 		emit SignalMessageCrash(fCrash.readAll());
-
+		
 		// wait for crash be sent
 		QEventLoop loop;
 		connect(this, SIGNAL(SignalCrashSent()), &loop, SLOT(quit()));
@@ -348,7 +338,7 @@ void Application::SendCrash()
  */
 void Application::Quit()
 {
-	l_info << "Quit application called!";
+	info_log << "Quit application called!";
 	InvMet(qApp, "quit", Qt::QueuedConnection);
 }
 }

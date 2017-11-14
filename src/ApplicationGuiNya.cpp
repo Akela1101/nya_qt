@@ -4,7 +4,7 @@
 #include "ApplicationGuiNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
 /**
  * Соединить стили из нескольких файлов в один.
@@ -12,7 +12,7 @@ namespace Nya
 QString LoadStyles(const QStringList& fileNames)
 {
 	QString ret;
-	for(const QString& fileName : fileNames )
+	for (const QString& fileName : fileNames)
 	{
 		QFile qssFile(fileName);
 		qssFile.open(QFile::ReadOnly);

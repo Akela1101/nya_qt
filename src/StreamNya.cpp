@@ -5,14 +5,14 @@
 #include "StreamNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
 static const int readTimeout = 72; // sec
 
 
 Stream::Stream(QIODevice* ioDevice)
-	: ioDevice(ioDevice)
-	, dataStream(new QDataStream(ioDevice))
+		: ioDevice(ioDevice)
+		, dataStream(new QDataStream(ioDevice))
 {
 	dataStream->setByteOrder(QDataStream::LittleEndian);
 	dataStream->setStatus(QDataStream::Ok);
@@ -25,7 +25,7 @@ Stream::~Stream() {}
  */
 bool Stream::IsReadable() const
 {
-	return ioDevice->bytesAvailable();
+	return ioDevice->bytesAvailable() != 0;
 }
 
 /**
@@ -54,14 +54,15 @@ Stream::operator bool() const
 void Stream::WriteRawData(const char* data, int len)
 {
 	int lenWrite = 0;
-	while( lenWrite < len && *this )
+	while (lenWrite < len && *this)
 	{
 		lenWrite += dataStream->writeRawData(data, len);
 	}
-	if( lenWrite != len )
+	if (lenWrite != len)
 	{
 		QByteArray dataBeginning(data, std::min(50, len));
-		l_error << "Nya::Stream write fail: (" << len << ")[" << dataBeginning << "] But was written: (" << lenWrite << ")";
+		error_log << "nya::Stream write fail: (" << len << ")[" << dataBeginning << "] But was written: (" << lenWrite
+		          << ")";
 		SetFailWrite();
 	}
 }
@@ -72,14 +73,15 @@ void Stream::WriteRawData(const char* data, int len)
 void Stream::ReadRawData(char* data, int len)
 {
 	int lenRead = 0;
-	while( lenRead < len && (ioDevice->bytesAvailable() || ioDevice->waitForReadyRead(readTimeout * 1000)) )
+	while (lenRead < len && (ioDevice->bytesAvailable() || ioDevice->waitForReadyRead(readTimeout * 1000)))
 	{
 		lenRead += dataStream->readRawData(data + lenRead, len - lenRead);
 	}
-	if( lenRead != len )
+	if (lenRead != len)
 	{
 		QByteArray dataBeginning(data, std::min(50, lenRead));
-		l_error << "Nya::Stream read fail: (" << len << ")[" << dataBeginning << "] But was read: (" << lenRead << ")";
+		error_log << "nya::Stream read fail: (" << len << ")[" << dataBeginning << "] But was read: (" << lenRead
+		          << ")";
 		SetFailRead();
 	}
 }
@@ -89,11 +91,11 @@ void Stream::ReadRawData(char* data, int len)
 /**
  * QByteArray - размер 1 байт. Если нужно больше, то руками писать.
  */
-Stream& operator <<(Stream& stream, const QByteArray& ba)
+Stream& operator<<(Stream& stream, const QByteArray& ba)
 {
 	return stream.WriteArray<uchar>(ba);
 }
-Stream& operator >>(Stream& stream, QByteArray& ba)
+Stream& operator>>(Stream& stream, QByteArray& ba)
 {
 	return stream.ReadArray<uchar>(ba);
 }
@@ -101,13 +103,13 @@ Stream& operator >>(Stream& stream, QByteArray& ba)
 /**
  * Строка Utf8 без нуля в конце [1]{абв}.
  */
-Stream& operator <<(Stream& stream, const QString& s)
+Stream& operator<<(Stream& stream, const QString& s)
 {
 	const QByteArray ba = s.toUtf8();
 	stream << ba;
 	return stream;
 }
-Stream& operator >>(Stream& stream, QString& s)
+Stream& operator>>(Stream& stream, QString& s)
 {
 	QByteArray ba;
 	stream >> ba;
@@ -118,51 +120,51 @@ Stream& operator >>(Stream& stream, QString& s)
 /**
   * Список строк (размер 2 байта ~ 65 000 штук).
   */
-Stream& operator <<(Stream& stream, const QStringList& l)
+Stream& operator<<(Stream& stream, const QStringList& l)
 {
-	return stream << (QList<QString>&)l;
+	return stream << (QList<QString>&) l;
 }
-Stream& operator >>(Stream& stream, QStringList& l)
+Stream& operator>>(Stream& stream, QStringList& l)
 {
-	return stream >> (QList<QString>&)l;
+	return stream >> (QList<QString>&) l;
 }
 
 /**
   * Время (4 байта даже для 64-битных систем).
   */
-Stream& operator <<(Stream& stream, time_t t)
+Stream& operator<<(Stream& stream, time_t t)
 {
-	stream << (int)t;
+	stream << (int) t;
 	return stream;
 }
-Stream& operator >>(Stream& stream, time_t& t)
+Stream& operator>>(Stream& stream, time_t& t)
 {
 	int iT;
 	stream >> iT;
-	t = (time_t)iT;
+	t = (time_t) iT;
 	return stream;
 }
 
 /**
  * Бул (1 байт).
  */
-Stream& operator <<(Stream& stream, bool b)
+Stream& operator<<(Stream& stream, bool b)
 {
-	stream << (uchar)b;
+	stream << (uchar) b;
 	return stream;
 }
-Stream& operator >>(Stream& stream, bool& b)
+Stream& operator>>(Stream& stream, bool& b)
 {
 	uchar u;
 	stream >> u;
-	b = (bool)u;
+	b = (bool) u;
 	return stream;
 }
 
 /**
  * C-строка.
  */
-Stream& operator <<(Stream& stream, const char* s)
+Stream& operator<<(Stream& stream, const char* s)
 {
 	return stream << QString(s);
 }

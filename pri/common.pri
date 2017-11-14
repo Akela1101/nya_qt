@@ -31,7 +31,6 @@ else {
 *-g++ {
 	QMAKE_CXXFLAGS *= \
 		-std=c++0x \
-		-fopenmp \
 		-U__STRICT_ANSI__ \
 		-MMD \ # add some headers
 		-Wno-unused-local-typedefs \
@@ -39,13 +38,11 @@ else {
 		-Wno-old-style-cast \   # () instead of casts
 		-pipe # maybe faster but uses more RAM
 
-	QMAKE_LFLAGS *= -fopenmp
-
 	win32 {
 		QMAKE_CXXFLAGS *= \
 			-fno-strict-aliasing \  # silent pointer dereferencing
-			-fpermissive \ # disables some danger errors!
-			-Wno-type-limits # disables: "comparison is always false"
+			-fpermissive \          # disables some danger errors!
+			-Wno-type-limits        # disables: "comparison is always false"
 
 		QMAKE_LFLAGS *= \
 			--enable-runtime-pseudo-reloc # for dll ( http://www.mingw.org/wiki/sampleDLL )

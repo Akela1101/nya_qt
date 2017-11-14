@@ -1,4 +1,6 @@
 #ifndef QT_NO_OPENSSL
+
+#include <NyaQt.hpp>
 #include <QString>
 #include <openssl/sha.h>
 #include <openssl/rand.h>
@@ -6,10 +8,9 @@
 #include <openssl/evp.h>
 
 #include "CryptoNya.hpp"
-#include "LogNya.hpp"
 
 
-namespace Nya
+namespace nya
 {
 static EVP_CIPHER_CTX cAES;
 static SHA256_CTX c256;
@@ -120,7 +121,7 @@ bool Crypto::CheckHash512(const QByteArray& a, const QByteArray& hash)
 {
 	if( hash.size() != 2 * SHA512_DIGEST_LENGTH )
 	{
-		l_error << "Wrong hash in database: [" << hash.size() << "] '" << hash << "' " << hash.toHex();
+		error_log << "Wrong hash in database: [" << hash.size() << "] '" << hash << "' " << hash.toHex();
 		return true;
 	}
 	QByteArray ret = hash;
